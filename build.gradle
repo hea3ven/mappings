@@ -1,0 +1,25 @@
+repositories {
+	maven {
+		url "https://libraries.minecraft.net/"
+	}
+	mavenCentral()
+}
+
+apply plugin: 'java'
+apply plugin: 'eclipse'
+
+version = "1.0.0"
+group = "net.mcmt"
+archivesBaseName = "mappings"
+
+sourceCompatibility = 1.6
+
+dependencies {
+	compile 'org.ow2.asm:asm-debug-all:5.0.3'
+	compile 'org.apache.logging.log4j:log4j-core:2.0-beta9'
+	compile 'org.apache.logging.log4j:log4j-api:2.0-beta9'
+	compile 'com.google.guava:guava:15.0'
+
+    testCompile 'junit:junit:4.12'
+}
+
