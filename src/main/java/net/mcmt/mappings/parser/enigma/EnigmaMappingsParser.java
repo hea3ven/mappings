@@ -63,7 +63,7 @@ public class EnigmaMappingsParser {
 	private MthdMapping currentMthd = null;
 
 	private Pattern clsPattern = Pattern
-			.compile("^(\\s*)CLASS\\s+((\\S+)\\$)?(\\S+)\\s+(\\S+)\\s*$");
+			.compile("^(\\s*)CLASS\\s+((\\S+)\\$)?(\\S+)\\s+(\\S*)\\s*$");
 	private Pattern fldPattern = Pattern.compile("^(\\s*)FIELD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
 	private Pattern mthdPattern = Pattern
 			.compile("^(\\s*)METHOD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
@@ -94,7 +94,7 @@ public class EnigmaMappingsParser {
 				if (parent == null) {
 					parent = getCls(m.group(3));
 				}
-				cls = new ClsMapping(parent, m.group(4), m.group(5));
+				cls = new ClsMapping(parent, m.group(4), (m.group(5) != null)? m.group(5) : m.group(4));
 				mapping.add(cls);
 			} else {
 				cls = new ClsMapping(m.group(4).replace("none/", ""),

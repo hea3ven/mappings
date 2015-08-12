@@ -1,8 +1,6 @@
 /bin/
 .*
-/art
-/research
-scratchpad.txt
+/build
 /eclipse
 /mcp
 /tags
