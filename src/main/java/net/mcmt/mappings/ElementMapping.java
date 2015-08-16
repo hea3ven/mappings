@@ -20,7 +20,7 @@ public abstract class ElementMapping {
 		path = path.replace('.', '/');
 		for (int i = 0; i < path.length(); i++) {
 			Character c = path.charAt(i);
-			if (!Character.isLetterOrDigit(c) && c != '_' && c != '/') {
+			if (!Character.isLetterOrDigit(c) && c != '_' && c != '/' && c!= '<' && c!= '>') {
 				String msg = String.format("invalid character at position %d in %s", i, path);
 				throw new InvalidCharacterMappingException(msg);
 			}

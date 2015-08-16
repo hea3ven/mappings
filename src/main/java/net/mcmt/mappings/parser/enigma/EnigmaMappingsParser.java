@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.Reader;
+import java.io.Writer;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -20,6 +21,7 @@ import net.mcmt.mappings.BuiltInTypeDesc;
 import net.mcmt.mappings.ClsMapping;
 import net.mcmt.mappings.ClsTypeDesc;
 import net.mcmt.mappings.Desc;
+import net.mcmt.mappings.ElementMapping;
 import net.mcmt.mappings.FldMapping;
 import net.mcmt.mappings.Mapping;
 import net.mcmt.mappings.MthdMapping;
@@ -63,7 +65,7 @@ public class EnigmaMappingsParser {
 	private MthdMapping currentMthd = null;
 
 	private Pattern clsPattern = Pattern
-			.compile("^(\\s*)CLASS\\s+((\\S+)\\$)?(\\S+)\\s+(\\S*)\\s*$");
+			.compile("^(\\s*)CLASS\\s+((\\S+)\\$)?(\\S+)\\s*(\\S*)\\s*$");
 	private Pattern fldPattern = Pattern.compile("^(\\s*)FIELD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
 	private Pattern mthdPattern = Pattern
 			.compile("^(\\s*)METHOD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
@@ -94,11 +96,11 @@ public class EnigmaMappingsParser {
 				if (parent == null) {
 					parent = getCls(m.group(3));
 				}
-				cls = new ClsMapping(parent, m.group(4), (m.group(5) != null)? m.group(5) : m.group(4));
+				cls = new ClsMapping(parent, m.group(4), (m.group(5) != null && !m.group(5).equals(""))? m.group(5) : m.group(4));
 				mapping.add(cls);
 			} else {
 				cls = new ClsMapping(m.group(4).replace("none/", ""),
-						m.group(5).replace("none/", ""));
+						((m.group(5) != null && !m.group(5).equals(""))? m.group(5) : m.group(4)).replace("none/", ""));
 				mapping.add(cls);
 			}
 			scope.addScope(m.group(1), cls);
