@@ -22,9 +22,15 @@ public class MthdMapping extends ElementMapping {
 		return desc;
 	}
 
+	public ClsMapping getParent() {
+		return (ClsMapping) parent;
+	}
+
 	@Override
 	public boolean equals(Object other) {
 		if (!super.equals(other))
+			return false;
+		if (getClass() != other.getClass())
 			return false;
 		MthdMapping otherFld = (MthdMapping) other;
 		return ((desc == null && otherFld.desc == null) || desc.equals(otherFld.desc));

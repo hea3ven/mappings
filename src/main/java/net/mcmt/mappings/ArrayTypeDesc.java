@@ -18,6 +18,10 @@ public class ArrayTypeDesc extends TypeDesc {
 		return "[" + desc.getDst();
 	}
 
+	public TypeDesc getDescType() {
+		return desc;
+	}
+
 	@Override
 	public boolean equals(Object other) {
 		if (this == other)

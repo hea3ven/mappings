@@ -7,6 +7,7 @@ import java.io.InputStreamReader;
 import java.io.Reader;
 import java.io.Writer;
 import java.util.ArrayList;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Stack;
@@ -64,8 +65,7 @@ public class EnigmaMappingsParser {
 	private ScopeManager scope = new ScopeManager();
 	private MthdMapping currentMthd = null;
 
-	private Pattern clsPattern = Pattern
-			.compile("^(\\s*)CLASS\\s+((\\S+)\\$)?(\\S+)\\s*(\\S*)\\s*$");
+	private Pattern clsPattern = Pattern.compile("^(\\s*)CLASS\\s+(\\S+)\\s*(\\S*)\\s*$");
 	private Pattern fldPattern = Pattern.compile("^(\\s*)FIELD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
 	private Pattern mthdPattern = Pattern
 			.compile("^(\\s*)METHOD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
@@ -90,31 +90,25 @@ public class EnigmaMappingsParser {
 	private void parseLine(String line) {
 		Matcher m = clsPattern.matcher(line);
 		if (m.matches()) {
-			ClsMapping cls = null;
-			if (m.group(3) != null) {
-				ClsMapping parent = mapping.getCls(m.group(3));
-				if (parent == null) {
-					parent = getCls(m.group(3));
-				}
-				cls = new ClsMapping(parent, m.group(4), (m.group(5) != null && !m.group(5).equals(""))? m.group(5) : m.group(4));
-				mapping.add(cls);
-			} else {
-				cls = new ClsMapping(m.group(4).replace("none/", ""),
-						((m.group(5) != null && !m.group(5).equals(""))? m.group(5) : m.group(4)).replace("none/", ""));
-				mapping.add(cls);
-			}
+			ClsMapping cls = mapping.getCls(m.group(2).replace("none/", ""));
+			cls.setDst((m.group(3) != null && !m.group(3).equals(""))
+					? m.group(3).replace("none/", "") : null);
 			scope.addScope(m.group(1), cls);
 			return;
 		}
 
 		m = fldPattern.matcher(line);
-		if (m.matches()) {
+		if (m.matches())
+
+		{
 			mapping.add(new FldMapping(scope.getScope(m.group(1)), m.group(2), m.group(3),
 					new Desc(parseType(m.group(4)))));
 		}
 
 		m = mthdPattern.matcher(line);
-		if (m.matches()) {
+		if (m.matches())
+
+		{
 			MthdMapping mthd = new MthdMapping(scope.getScope(m.group(1)), m.group(2), m.group(3),
 					parseMethodDesc(m.group(4)));
 			mapping.add(mthd);
@@ -122,9 +116,12 @@ public class EnigmaMappingsParser {
 		}
 
 		m = argPattern.matcher(line);
-		if (m.matches()) {
+		if (m.matches())
+
+		{
 			mapping.add(new ArgMapping(currentMthd, Integer.parseInt(m.group(2)), m.group(3)));
 		}
+
 	}
 
 	private TypeDesc parseType(String typeData) {
@@ -163,18 +160,102 @@ public class EnigmaMappingsParser {
 
 	private ClsMapping getCls(String name) {
 		name = name.replace("none/", "");
-		ClsMapping cls = mapping.getCls(name);
-		if (cls != null)
-			return cls;
-
-		if (!missingClss.containsKey(name)) {
-			if (name.contains("$")) {
-				String[] parts = name.split("\\$", 2);
-				missingClss.put(name, new ClsMapping(getCls(parts[0]), parts[1], parts[1]));
-			} else
-				missingClss.put(name, new ClsMapping(name, name));
-		}
-		return missingClss.get(name);
+		return mapping.getCls(name);
 	}
 
+	public void write(Mapping mapping, Writer writer) throws IOException {
+		List<ClsMapping> out = new ArrayList<ClsMapping>();
+		for (ElementMapping elem : mapping.getAll()) {
+			if (elem instanceof ClsMapping) {
+				ClsMapping clsMap = (ClsMapping) elem;
+				if (clsMap.getParent() == null) {
+					out.add(clsMap);
+				}
+			}
+		}
+		out.sort(new Comparator<ClsMapping>() {
+			@Override
+			public int compare(ClsMapping o1, ClsMapping o2) {
+				return o1.getSrcPath().compareTo(o2.getSrcPath());
+			}
+		});
+
+		for (ClsMapping clsMap : out) {
+			writeCls(writer, clsMap, "");
+		}
+	}
+
+	protected void writeCls(Writer writer, ClsMapping clsMap, String indent) throws IOException {
+		if (clsMap.getDstName() == null && clsMap.getChildren().size() == 0)
+			return;
+
+		String srcPath = null;
+		if (!topParentHasPkg(clsMap)) {
+			if (indent.equals(""))
+				srcPath = "none/" + clsMap.getSrcName();
+			else
+				srcPath = "none/" + clsMap.getSrcPath();
+		} else {
+			srcPath = clsMap.getSrcPath();
+		}
+		String dstPath = null;
+		if (!clsMap.getSrcPath().equals(clsMap.getDstPath())) {
+			if (indent.equals(""))
+				dstPath = (clsMap.getDstPath() != null) ? clsMap.getDstPath() : "";
+			else
+				dstPath = clsMap.getDstName();
+		} else
+			dstPath = "";
+		writer.write(String.format("%sCLASS %s %s\n", indent, srcPath, dstPath));
+
+		for (ElementMapping elem : clsMap.getChildren()) {
+			if (elem instanceof MthdMapping) {
+				MthdMapping mthdMap = (MthdMapping) elem;
+				writer.write(String.format("%s\tMETHOD %s %s %s\n", indent, mthdMap.getSrcName(),
+						mthdMap.getDstName(), descToString(true, mthdMap.getDesc())));
+			} else if (elem instanceof FldMapping) {
+				FldMapping fldMap = (FldMapping) elem;
+				writer.write(String.format("%s\tFIELD %s %s %s\n", indent, fldMap.getSrcName(),
+						fldMap.getDstName(), descToString(false, fldMap.getDesc())));
+			} else if (elem instanceof ClsMapping) {
+				ClsMapping innerClsMap = (ClsMapping) elem;
+				writeCls(writer, innerClsMap, indent + "\t");
+			}
+		}
+	}
+
+	private String descToString(boolean method, Desc desc) {
+		StringBuilder sb = new StringBuilder();
+		if (method) {
+			sb.append('(');
+			for (TypeDesc param : desc.getParams()) {
+				sb.append(typeDescToString(param));
+			}
+			sb.append(')');
+		}
+		sb.append(typeDescToString(desc.getReturn()));
+		return sb.toString();
+	}
+
+	private String typeDescToString(TypeDesc param) {
+		if (param instanceof ClsTypeDesc) {
+			ClsTypeDesc clsTypDesc = (ClsTypeDesc) param;
+			if (!topParentHasPkg(clsTypDesc.getCls())) {
+				if (clsTypDesc.getCls().getParent() == null)
+					return "Lnone/" + clsTypDesc.getCls().getSrcName() + ";";
+				else
+					return "Lnone/" + clsTypDesc.getCls().getSrcPath() + ";";
+			}
+		} else if (param instanceof ArrayTypeDesc) {
+			return "[" + typeDescToString(((ArrayTypeDesc) param).getDescType());
+		}
+
+		return param.getSrc();
+	}
+
+	private boolean topParentHasPkg(ClsMapping clsMap) {
+		if (clsMap.getParent() != null)
+			return topParentHasPkg(clsMap.getParent());
+		return clsMap.getSrcScope() != null;
+	}
 }

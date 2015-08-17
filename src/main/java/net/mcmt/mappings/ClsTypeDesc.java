@@ -18,12 +18,16 @@ public class ClsTypeDesc extends TypeDesc {
 		return "L" + cls.getDstPath() + ";";
 	}
 
+	public ClsMapping getCls() {
+		return cls;
+	}
+
 	@Override
 	public boolean equals(Object other) {
 		if (this == other)
 			return true;
 
-		if (!(other instanceof TypeDesc))
+		if (getClass() != other.getClass())
 			return false;
 
 		ClsTypeDesc otherMapping = (ClsTypeDesc) other;

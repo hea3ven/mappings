@@ -38,6 +38,14 @@ public class Desc {
 		return sb.toString();
 	}
 
+	public TypeDesc[] getParams() {
+		return params;
+	}
+
+	public TypeDesc getReturn() {
+		return ret;
+	}
+
 	@Override
 	public boolean equals(Object other) {
 		if (this == other)

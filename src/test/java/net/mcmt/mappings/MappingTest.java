@@ -55,20 +55,6 @@ public class MappingTest {
 	}
 
 	@Test(expected=DuplicateMappingException.class)
-	public void addCls_clasessWithSrcEqDst_throwsException() {
-		Mapping map = new Mapping();
-		map.add(new ClsMapping("a/b", "c/d"));
-		map.add(new ClsMapping("e/f", "a/b"));
-	}
-
-	@Test(expected=DuplicateMappingException.class)
-	public void addCls_clasessWithDstEqSrc_throwsException() {
-		Mapping map = new Mapping();
-		map.add(new ClsMapping("a/b", "c/d"));
-		map.add(new ClsMapping("c/d", "e/f"));
-	}
-
-	@Test(expected=DuplicateMappingException.class)
 	public void addCls_clasessWithDstEqDst_throwsException() {
 		Mapping map = new Mapping();
 		map.add(new ClsMapping("a/b", "c/d"));

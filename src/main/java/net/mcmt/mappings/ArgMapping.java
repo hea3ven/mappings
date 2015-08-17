@@ -11,4 +11,8 @@ public class ArgMapping extends ElementMapping {
 		return "@";
 	}
 
+	public MthdMapping getParent() {
+		return (MthdMapping) parent;
+	}
+
 }

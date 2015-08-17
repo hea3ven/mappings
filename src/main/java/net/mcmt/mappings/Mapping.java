@@ -20,8 +20,17 @@ public class Mapping {
 		ElementMapping cls = get(name);
 		if (cls instanceof ClsMapping)
 			return (ClsMapping) cls;
-		else
-			return null;
+		else {
+			ClsMapping clsMap = null;
+			if (!name.contains("$")) {
+				clsMap = new ClsMapping(name, null);
+			} else {
+				ClsMapping parent = getCls(name.substring(0, name.lastIndexOf('$')));
+				clsMap = new ClsMapping(parent, name.substring(name.lastIndexOf('$') + 1), null);
+			}
+			add(clsMap);
+			return clsMap;
+		}
 	}
 
 	public MthdMapping getMthd(String name) {
@@ -62,10 +71,24 @@ public class Mapping {
 	}
 
 	public void add(ElementMapping clsMap) {
-		if (getCls(clsMap.getSrcPath()) != null)
-			throw new DuplicateMappingException(clsMap.getSrcPath());
-		if (getCls(clsMap.getDstPath()) != null)
-			throw new DuplicateMappingException(clsMap.getDstPath());
+		if (clsMap instanceof ClsMapping) {
+			for (ElementMapping otherClsMap : clsMaps) {
+				if (otherClsMap instanceof ClsMapping) {
+					if (clsMap.getSrcPath().equals(otherClsMap.getSrcPath()))
+						throw new DuplicateMappingException(clsMap.getSrcPath());
+					if (clsMap.getDstName() != null && otherClsMap.getDstName() != null
+							&& clsMap.getDstPath().equals(otherClsMap.getDstPath()))
+						throw new DuplicateMappingException(clsMap.getDstPath());
+				}
+			}
+		}
+		if (clsMap.parent != null) {
+			clsMap.parent.addChild(clsMap);
+		}
 		this.clsMaps.add(clsMap);
+	}
+
+	public Set<ElementMapping> getAll() {
+		return clsMaps;
 	}
 }
