@@ -7,10 +7,11 @@ repositories {
 
 apply plugin: 'java'
 apply plugin: 'eclipse'
+apply plugin: 'maven'
 
 version = "1.0.0"
 group = "com.hea3ven.tools.mappings"
-archivesBaseName = "ht-mappings"
+archivesBaseName = "mappings"
 
 sourceCompatibility = 1.6
 
@@ -23,3 +24,10 @@ dependencies {
     testCompile 'junit:junit:4.12'
 }
 
+uploadArchives {
+    repositories {
+        mavenDeployer {
+            repository(url: project.hasProperty('hea3venMvnUrl') ? project.hea3venMvnUrl : '')
+        }
+    }
+}

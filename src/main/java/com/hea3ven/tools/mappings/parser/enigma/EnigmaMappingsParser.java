@@ -212,11 +212,11 @@ public class EnigmaMappingsParser {
 			if (elem instanceof MthdMapping) {
 				MthdMapping mthdMap = (MthdMapping) elem;
 				writer.write(String.format("%s\tMETHOD %s %s %s\n", indent, mthdMap.getSrcName(),
-						mthdMap.getDstName(), descToString(true, mthdMap.getDesc())));
+						mthdMap.getDstName(), descToString(mthdMap.getDesc())));
 			} else if (elem instanceof FldMapping) {
 				FldMapping fldMap = (FldMapping) elem;
 				writer.write(String.format("%s\tFIELD %s %s %s\n", indent, fldMap.getSrcName(),
-						fldMap.getDstName(), descToString(false, fldMap.getDesc())));
+						fldMap.getDstName(), descToString(fldMap.getDesc())));
 			} else if (elem instanceof ClsMapping) {
 				ClsMapping innerClsMap = (ClsMapping) elem;
 				writeCls(writer, innerClsMap, indent + "\t");
@@ -224,9 +224,9 @@ public class EnigmaMappingsParser {
 		}
 	}
 
-	private String descToString(boolean method, Desc desc) {
+	private String descToString(Desc desc) {
 		StringBuilder sb = new StringBuilder();
-		if (method) {
+		if (desc.getParams() != null) {
 			sb.append('(');
 			for (TypeDesc param : desc.getParams()) {
 				sb.append(typeDescToString(param));

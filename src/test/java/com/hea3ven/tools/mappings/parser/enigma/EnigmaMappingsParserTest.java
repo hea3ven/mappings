@@ -18,6 +18,7 @@ import com.hea3ven.tools.mappings.Desc;
 import com.hea3ven.tools.mappings.FldMapping;
 import com.hea3ven.tools.mappings.Mapping;
 import com.hea3ven.tools.mappings.MthdMapping;
+import com.hea3ven.tools.mappings.TypeDesc;
 import com.hea3ven.tools.mappings.parser.enigma.EnigmaMappingsParser;
 
 public class EnigmaMappingsParserTest {
@@ -248,7 +249,8 @@ public class EnigmaMappingsParserTest {
 		Mapping mapping = new Mapping();
 		ClsMapping clsMap = new ClsMapping("a/b", "c/d");
 		mapping.add(clsMap);
-		MthdMapping mthdMap = new MthdMapping(clsMap, "e", "f", new Desc(new ClsTypeDesc(clsMap)));
+		MthdMapping mthdMap = new MthdMapping(clsMap, "e", "f",
+				new Desc(new ClsTypeDesc(clsMap), new TypeDesc[0]));
 		mapping.add(mthdMap);
 
 		StringWriter sw = new StringWriter();
@@ -320,7 +322,8 @@ public class EnigmaMappingsParserTest {
 		StringWriter sw = new StringWriter();
 		parser.write(mapping, sw);
 
-		assertEquals("CLASS none/a b/c\n\tCLASS none/a$d e\n\tFIELD f g Lnone/a$d;\n", sw.toString());
+		assertEquals("CLASS none/a b/c\n\tCLASS none/a$d e\n\tFIELD f g Lnone/a$d;\n",
+				sw.toString());
 	}
 
 	@Test
@@ -329,7 +332,8 @@ public class EnigmaMappingsParserTest {
 		Mapping mapping = new Mapping();
 		ClsMapping clsMap = new ClsMapping("a", "b/c");
 		mapping.add(clsMap);
-		FldMapping fldMap = new FldMapping(clsMap, "d", "e", new Desc(new ArrayTypeDesc(new ClsTypeDesc(clsMap))));
+		FldMapping fldMap = new FldMapping(clsMap, "d", "e",
+				new Desc(new ArrayTypeDesc(new ClsTypeDesc(clsMap))));
 		mapping.add(fldMap);
 
 		StringWriter sw = new StringWriter();

@@ -26,6 +26,15 @@ public class MthdMapping extends ElementMapping {
 		return (ClsMapping) parent;
 	}
 
+	public boolean matches(String parent, String name, String desc) {
+		return matches(parent + "/" + name, desc);
+	}
+
+	private boolean matches(String path, String desc) {
+		return (getSrcPath().equals(path) && this.desc.getSrc().equals(desc))
+				|| (getDstPath().equals(path) && this.desc.getDst().equals(desc));
+	}
+
 	@Override
 	public boolean equals(Object other) {
 		if (!super.equals(other))

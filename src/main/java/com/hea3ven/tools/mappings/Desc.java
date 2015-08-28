@@ -7,6 +7,10 @@ public class Desc {
 	private TypeDesc ret;
 	private TypeDesc[] params;
 
+	public Desc(TypeDesc ret) {
+		this(ret, (TypeDesc[]) null);
+	}
+
 	public Desc(TypeDesc ret, TypeDesc... params) {
 		this.ret = ret;
 		this.params = params;
@@ -14,7 +18,7 @@ public class Desc {
 
 	public String getSrc() {
 		StringBuilder sb = new StringBuilder();
-		if (params.length > 0) {
+		if (params != null) {
 			sb.append('(');
 			for (TypeDesc typDesc : params) {
 				sb.append(typDesc.getSrc());
@@ -27,7 +31,7 @@ public class Desc {
 
 	public String getDst() {
 		StringBuilder sb = new StringBuilder();
-		if (params.length > 0) {
+		if (params != null) {
 			sb.append('(');
 			for (TypeDesc typDesc : params) {
 				sb.append(typDesc.getDst());

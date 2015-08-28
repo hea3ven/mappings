@@ -9,6 +9,7 @@ public class Mapping {
 	private Set<ElementMapping> clsMaps = Sets.newHashSet();
 
 	public ElementMapping get(String name) {
+		name = name.replace('.', '/');
 		for (ElementMapping clsMap : clsMaps) {
 			if (name.equals(clsMap.getSrcPath()) || name.equals(clsMap.getDstPath()))
 				return clsMap;

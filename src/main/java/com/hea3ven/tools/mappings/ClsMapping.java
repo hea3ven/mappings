@@ -15,6 +15,10 @@ public class ClsMapping extends ElementMapping {
 		return "$";
 	}
 
+	public boolean matches(String path) {
+		return getSrcPath().equals(path) || (getDstPath() != null && getDstPath().equals(path));
+	}
+
 	@Override
 	public String toString() {
 		// TODO: Fix
