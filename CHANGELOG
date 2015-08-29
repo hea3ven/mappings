@@ -1,3 +1,4 @@
     * add methods to run in deobfuscated environment.
+    * fix errors with inner classes.
 v1.0.0:
     * initial release

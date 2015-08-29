@@ -10,10 +10,12 @@ public class Mapping {
 
 	public ElementMapping get(String name) {
 		name = name.replace('.', '/');
+
 		for (ElementMapping clsMap : clsMaps) {
 			if (name.equals(clsMap.getSrcPath()) || name.equals(clsMap.getDstPath()))
 				return clsMap;
 		}
+
 		return null;
 	}
 
@@ -77,7 +79,7 @@ public class Mapping {
 				if (otherClsMap instanceof ClsMapping) {
 					if (clsMap.getSrcPath().equals(otherClsMap.getSrcPath()))
 						throw new DuplicateMappingException(clsMap.getSrcPath());
-					if (clsMap.getDstName() != null && otherClsMap.getDstName() != null
+					if (clsMap.getDstPath() != null && otherClsMap.getDstPath() != null
 							&& clsMap.getDstPath().equals(otherClsMap.getDstPath()))
 						throw new DuplicateMappingException(clsMap.getDstPath());
 				}

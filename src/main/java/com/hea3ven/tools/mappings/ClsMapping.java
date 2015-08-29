@@ -7,7 +7,15 @@ public class ClsMapping extends ElementMapping {
 	}
 
 	public ClsMapping(ClsMapping parent, String src, String dst) {
-		super(parent, src, dst);
+		super(parent, src, (dst == null && isAnonymous(src)) ? src : dst);
+	}
+
+	private static boolean isAnonymous(String src) {
+		for (char c : src.toCharArray()) {
+			if (!Character.isDigit(c))
+				return false;
+		}
+		return true;
 	}
 
 	@Override

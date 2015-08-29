@@ -69,7 +69,7 @@ public abstract class ElementMapping {
 	}
 
 	public String getDstPath() {
-		if (dst == null)
+		if (dst == null || (parent != null && parent.getDstPath() == null))
 			return null;
 
 		if (parent != null)
