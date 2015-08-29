@@ -15,7 +15,7 @@ public class ClsTypeDesc extends TypeDesc {
 
 	@Override
 	public String getDst() {
-		return "L" + cls.getDstPath() + ";";
+		return "L" + (cls.getDstPath() != null ? cls.getDstPath() : cls.getSrcPath()) + ";";
 	}
 
 	public ClsMapping getCls() {

@@ -41,6 +41,14 @@ public abstract class ElementMapping {
 		this.dst = validate(dst);
 	}
 
+	public String getPath(boolean src) {
+		return src ? getSrcPath() : getDstPath();
+	}
+
+	public String getName(boolean src) {
+		return src ? getSrcName() : getDstName();
+	}
+
 	public String getSrcPath() {
 		if (parent != null)
 			return parent.getSrcPath() + getParentPathSep() + src;

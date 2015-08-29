@@ -16,6 +16,10 @@ public class Desc {
 		this.params = params;
 	}
 
+	public String get(boolean src) {
+		return src ? getSrc() : getDst();
+	}
+
 	public String getSrc() {
 		StringBuilder sb = new StringBuilder();
 		if (params != null) {
