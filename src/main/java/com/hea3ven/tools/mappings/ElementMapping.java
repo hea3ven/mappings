@@ -69,11 +69,15 @@ public abstract class ElementMapping {
 	}
 
 	public String getDstPath() {
-		if (dst == null || (parent != null && parent.getDstPath() == null))
+		if (dst == null)
 			return null;
 
-		if (parent != null)
-			return parent.getDstPath() + getParentPathSep() + dst;
+		if (parent != null) {
+			if (parent.getDstPath() != null)
+				return parent.getDstPath() + getParentPathSep() + dst;
+			else
+				return parent.getSrcPath() + getParentPathSep() + dst;
+		}
 		return dst;
 	}
 
@@ -112,10 +116,9 @@ public abstract class ElementMapping {
 			return false;
 
 		ElementMapping otherMapping = (ElementMapping) other;
-		return ((parent == null && otherMapping.parent == null)
-				|| (parent != null && parent.equals(otherMapping.parent)))
-				&& src.equals(otherMapping.src)
-				&& ((dst == null && otherMapping.dst == null) || dst.equals(otherMapping.dst));
+		return ((parent == null && otherMapping.parent == null) ||
+				(parent != null && parent.equals(otherMapping.parent))) && src.equals(otherMapping.src) &&
+				((dst == null && otherMapping.dst == null) || dst.equals(otherMapping.dst));
 	}
 
 	@Override
