@@ -1,6 +1,8 @@
 package com.hea3ven.tools.mappings;
 
+import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.List;
 
 public class Desc {
 
@@ -73,5 +75,38 @@ public class Desc {
 		hash = hash * 31 + Arrays.hashCode(params);
 
 		return hash;
+	}
+
+	public static Desc parse(Mapping mappings, String desc) {
+		if (desc.charAt(0) != '(')
+			return new Desc(parseType(mappings, desc));
+		int i = 1;
+		List<TypeDesc> params = new ArrayList<TypeDesc>();
+		while (desc.charAt(i) != ')') {
+			params.add(parseType(mappings, desc.substring(i)));
+			i += typeDescLenght(desc.substring(i));
+		}
+
+		return new Desc(parseType(mappings, desc.substring(i + 1)), params.toArray(new TypeDesc[0]));
+	}
+
+	private static TypeDesc parseType(Mapping mappings, String typeData) {
+		TypeDesc typ = BuiltInTypeDesc.get(typeData.charAt(0));
+		if (typ == null) {
+			if (typeData.charAt(0) == '[') {
+				typ = new ArrayTypeDesc(parseType(mappings, typeData.substring(1)));
+			} else {
+				typ = new ClsTypeDesc(mappings.getCls(typeData.substring(1, typeData.indexOf(';'))));
+			}
+		}
+		return typ;
+	}
+
+	private static int typeDescLenght(String typeData) {
+		if (BuiltInTypeDesc.get(typeData.charAt(0)) != null)
+			return 1;
+		if (typeData.charAt(0) == '[')
+			return 1;
+		return typeData.indexOf(';') + 1;
 	}
 }

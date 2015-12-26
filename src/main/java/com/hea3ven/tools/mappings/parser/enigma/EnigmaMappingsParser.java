@@ -55,7 +55,6 @@ public class EnigmaMappingsParser {
 				stack.pop();
 			return stack.peek().cls;
 		}
-
 	}
 
 	private Mapping mapping = new Mapping();
@@ -67,8 +66,7 @@ public class EnigmaMappingsParser {
 
 	private Pattern clsPattern = Pattern.compile("^(\\s*)CLASS\\s+(\\S+)\\s*(\\S*)\\s*$");
 	private Pattern fldPattern = Pattern.compile("^(\\s*)FIELD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
-	private Pattern mthdPattern = Pattern
-			.compile("^(\\s*)METHOD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
+	private Pattern mthdPattern = Pattern.compile("^(\\s*)METHOD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
 	private Pattern argPattern = Pattern.compile("^(\\s*)ARG\\s+(\\d+)\\s+(\\S+)\\s*$");
 
 	public Mapping add(InputStream stream) throws IOException {
@@ -91,8 +89,8 @@ public class EnigmaMappingsParser {
 		Matcher m = clsPattern.matcher(line);
 		if (m.matches()) {
 			ClsMapping cls = mapping.getCls(m.group(2).replace("none/", ""));
-			cls.setDst((m.group(3) != null && !m.group(3).equals(""))
-					? m.group(3).replace("none/", "") : null);
+			cls.setDst(
+					(m.group(3) != null && !m.group(3).equals("")) ? m.group(3).replace("none/", "") : null);
 			scope.addScope(m.group(1), cls);
 			return;
 		}
@@ -102,7 +100,7 @@ public class EnigmaMappingsParser {
 
 		{
 			mapping.add(new FldMapping(scope.getScope(m.group(1)), m.group(2), m.group(3),
-					new Desc(parseType(m.group(4)))));
+					Desc.parse(mapping, m.group(4))));
 		}
 
 		m = mthdPattern.matcher(line);
@@ -110,7 +108,7 @@ public class EnigmaMappingsParser {
 
 		{
 			MthdMapping mthd = new MthdMapping(scope.getScope(m.group(1)), m.group(2), m.group(3),
-					parseMethodDesc(m.group(4)));
+					Desc.parse(mapping, m.group(4)));
 			mapping.add(mthd);
 			currentMthd = mthd;
 		}
@@ -121,41 +119,6 @@ public class EnigmaMappingsParser {
 		{
 			mapping.add(new ArgMapping(currentMthd, Integer.parseInt(m.group(2)), m.group(3)));
 		}
-
-	}
-
-	private TypeDesc parseType(String typeData) {
-		TypeDesc typ = BuiltInTypeDesc.get(typeData.charAt(0));
-		if (typ == null) {
-			if (typeData.charAt(0) == '[') {
-				typ = new ArrayTypeDesc(parseType(typeData.substring(1)));
-			} else {
-				typ = new ClsTypeDesc(getCls(typeData.substring(1, typeData.indexOf(';'))));
-			}
-		}
-		return typ;
-	}
-
-	private Desc parseMethodDesc(String descData) {
-		if (descData.charAt(0) != '(')
-			throw new EnigmaParserException("invalid method desc " + descData);
-		int i = 1;
-		List<TypeDesc> params = new ArrayList<TypeDesc>();
-		while (descData.charAt(i) != ')') {
-			params.add(parseType(descData.substring(i)));
-			i += typeDescLenght(descData.substring(i));
-
-		}
-
-		return new Desc(parseType(descData.substring(i + 1)), params.toArray(new TypeDesc[0]));
-	}
-
-	private int typeDescLenght(String typeData) {
-		if (BuiltInTypeDesc.get(typeData.charAt(0)) != null)
-			return 1;
-		if (typeData.charAt(0) == '[')
-			return 1;
-		return typeData.indexOf(';') + 1;
 	}
 
 	private ClsMapping getCls(String name) {

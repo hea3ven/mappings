@@ -36,33 +36,30 @@ public class Mapping {
 		}
 	}
 
-	public MthdMapping getMthd(String name) {
-		ElementMapping mthd = get(name);
-		if (mthd instanceof MthdMapping)
-			return (MthdMapping) mthd;
-		else
-			return null;
-	}
-
 	public MthdMapping getMthd(String name, String desc) {
 		for (ElementMapping clsMap : clsMaps) {
 			if (clsMap instanceof MthdMapping) {
 				MthdMapping mthd = (MthdMapping) clsMap;
-				if ((name.equals(mthd.getSrcPath()) || name.equals(mthd.getDstPath()))
-						&& (desc.equals(mthd.getDesc().getSrc())
-								|| desc.equals(mthd.getDesc().getDst())))
+				if ((name.equals(mthd.getSrcPath()) || name.equals(mthd.getDstPath())) &&
+						(desc.equals(mthd.getDesc().getSrc()) || desc.equals(mthd.getDesc().getDst())))
 					return mthd;
 			}
 		}
-		return null;
+		ClsMapping parent = getCls(name.substring(0, name.lastIndexOf('/')));
+		String mthdName = name.substring(name.lastIndexOf('/') + 1);
+		MthdMapping mthd = new MthdMapping(parent, mthdName, mthdName, Desc.parse(this, desc));
+		add(mthd);
+		return mthd;
 	}
 
 	public FldMapping getFld(String name) {
 		ElementMapping fld = get(name);
-		if (fld instanceof FldMapping)
-			return (FldMapping) fld;
-		else
-			return null;
+		if (!(fld instanceof FldMapping)) {
+			ClsMapping parent = getCls(name.substring(0, name.lastIndexOf('/')));
+			String fldName = name.substring(name.lastIndexOf('/') + 1);
+			fld = new FldMapping(parent, fldName, fldName, null);
+		}
+		return (FldMapping) fld;
 	}
 
 	public ArgMapping getArg(String name) {
@@ -79,8 +76,8 @@ public class Mapping {
 				if (otherClsMap instanceof ClsMapping) {
 					if (clsMap.getSrcPath().equals(otherClsMap.getSrcPath()))
 						throw new DuplicateMappingException(clsMap.getSrcPath());
-					if (clsMap.getDstPath() != null && otherClsMap.getDstPath() != null
-							&& clsMap.getDstPath().equals(otherClsMap.getDstPath()))
+					if (clsMap.getDstPath() != null && otherClsMap.getDstPath() != null &&
+							clsMap.getDstPath().equals(otherClsMap.getDstPath()))
 						throw new DuplicateMappingException(clsMap.getDstPath());
 				}
 			}
