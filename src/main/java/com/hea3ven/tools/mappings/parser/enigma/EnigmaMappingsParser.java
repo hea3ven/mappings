@@ -59,8 +59,6 @@ public class EnigmaMappingsParser {
 
 	private Mapping mapping = new Mapping();
 
-	private HashMap<String, ClsMapping> missingClss = Maps.newHashMap();
-
 	private ScopeManager scope = new ScopeManager();
 	private MthdMapping currentMthd = null;
 
@@ -78,46 +76,42 @@ public class EnigmaMappingsParser {
 		for (String line = br.readLine(); line != null; line = br.readLine()) {
 			parseLine(line);
 		}
-		for (ClsMapping cls : missingClss.values()) {
-			if (mapping.getCls(cls.getSrcPath()) == null)
-				mapping.add(cls);
-		}
 		return mapping;
 	}
 
 	private void parseLine(String line) {
 		Matcher m = clsPattern.matcher(line);
 		if (m.matches()) {
-			ClsMapping cls = mapping.getCls(m.group(2).replace("none/", ""));
-			cls.setDst(
-					(m.group(3) != null && !m.group(3).equals("")) ? m.group(3).replace("none/", "") : null);
+			String dst = null;
+			String src = m.group(2).replace("none/", "");
+			if (m.group(3) != null && !m.group(3).equals(""))
+				dst = m.group(3).replace("none/", "");
+			if (dst != null && src.contains("$")) {
+				dst = "$" + dst;
+			}
+			ClsMapping cls = mapping.addCls(src, dst);
 			scope.addScope(m.group(1), cls);
 			return;
 		}
 
 		m = fldPattern.matcher(line);
-		if (m.matches())
-
-		{
-			mapping.add(new FldMapping(scope.getScope(m.group(1)), m.group(2), m.group(3),
-					Desc.parse(mapping, m.group(4))));
+		if (m.matches()) {
+			ClsMapping cls = this.scope.getScope(m.group(1));
+			mapping.addFld(cls.getSrcPath() + "/" + m.group(2), cls.getDstPath() + "/" + m.group(3),
+					m.group(4));
 		}
 
 		m = mthdPattern.matcher(line);
-		if (m.matches())
-
-		{
-			MthdMapping mthd = new MthdMapping(scope.getScope(m.group(1)), m.group(2), m.group(3),
-					Desc.parse(mapping, m.group(4)));
-			mapping.add(mthd);
-			currentMthd = mthd;
+		if (m.matches()) {
+			ClsMapping cls = this.scope.getScope(m.group(1));
+			currentMthd =
+					mapping.addMthd(cls.getSrcPath() + "/" + m.group(2), cls.getDstPath() + "/" + m.group(3),
+							m.group(4));
 		}
 
 		m = argPattern.matcher(line);
-		if (m.matches())
-
-		{
-			mapping.add(new ArgMapping(currentMthd, Integer.parseInt(m.group(2)), m.group(3)));
+		if (m.matches()) {
+//			mapping.add(new ArgMapping(currentMthd, Integer.parseInt(m.group(2)), m.group(3)));
 		}
 	}
 

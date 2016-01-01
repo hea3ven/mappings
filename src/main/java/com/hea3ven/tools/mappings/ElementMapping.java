@@ -5,10 +5,13 @@ import java.util.Set;
 
 public abstract class ElementMapping {
 
-	protected ElementMapping parent;
-	protected Set<ElementMapping> children;
-	private String src;
+	protected final ElementMapping parent;
+	protected final Set<ElementMapping> children;
+	private final String src;
 	private String dst;
+
+	private final String srcPath;
+	private final String dstPath;
 
 	public ElementMapping(String src, String dst) {
 		this(null, src, dst);
@@ -18,7 +21,20 @@ public abstract class ElementMapping {
 		this.parent = parent;
 		this.src = validate(src);
 		this.dst = validate(dst);
-		this.children = new HashSet<ElementMapping>();
+		this.children = new HashSet<>();
+
+		if (parent != null)
+			srcPath = parent.getSrcPath() + getParentPathSep() + this.src;
+		else
+			srcPath = this.src;
+		if (parent != null) {
+			if (parent.getDstPath() != null)
+				dstPath = parent.getDstPath() + getParentPathSep() + dst;
+			else
+				dstPath = parent.getSrcPath() + getParentPathSep() + dst;
+		} else {
+			dstPath = this.dst;
+		}
 	}
 
 	private String validate(String path) {
@@ -26,7 +42,8 @@ public abstract class ElementMapping {
 			path = path.replace('.', '/');
 			for (int i = 0; i < path.length(); i++) {
 				Character c = path.charAt(i);
-				if (!Character.isLetterOrDigit(c) && c != '_' && c != '/' && c != '<' && c != '>') {
+				if (!Character.isLetterOrDigit(c) && c != '_' && c != '/' && c != '<' && c != '>' &&
+						c != '$') {
 					String msg = String.format("invalid character at position %d in %s", i, path);
 					throw new InvalidCharacterMappingException(msg);
 				}
@@ -37,10 +54,6 @@ public abstract class ElementMapping {
 
 	protected abstract String getParentPathSep();
 
-	public void setDst(String dst) {
-		this.dst = validate(dst);
-	}
-
 	public String getPath(boolean src) {
 		return src ? getSrcPath() : getDstPath();
 	}
@@ -50,9 +63,7 @@ public abstract class ElementMapping {
 	}
 
 	public String getSrcPath() {
-		if (parent != null)
-			return parent.getSrcPath() + getParentPathSep() + src;
-		return src;
+		return srcPath;
 	}
 
 	public String getSrcScope() {
@@ -69,16 +80,7 @@ public abstract class ElementMapping {
 	}
 
 	public String getDstPath() {
-		if (dst == null)
-			return null;
-
-		if (parent != null) {
-			if (parent.getDstPath() != null)
-				return parent.getDstPath() + getParentPathSep() + dst;
-			else
-				return parent.getSrcPath() + getParentPathSep() + dst;
-		}
-		return dst;
+		return dstPath;
 	}
 
 	public String getDstScope() {
@@ -97,10 +99,6 @@ public abstract class ElementMapping {
 		if (dst == null)
 			return null;
 		return dst.substring(dst.lastIndexOf('/') + 1);
-	}
-
-	public void addChild(ElementMapping child) {
-		children.add(child);
 	}
 
 	public Set<ElementMapping> getChildren() {

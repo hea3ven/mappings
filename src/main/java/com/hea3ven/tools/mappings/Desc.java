@@ -96,7 +96,11 @@ public class Desc {
 			if (typeData.charAt(0) == '[') {
 				typ = new ArrayTypeDesc(parseType(mappings, typeData.substring(1)));
 			} else {
-				typ = new ClsTypeDesc(mappings.getCls(typeData.substring(1, typeData.indexOf(';'))));
+				String cls = typeData.substring(1, typeData.indexOf(';'));
+				ClsMapping clsMap = mappings.getCls(cls);
+				if (clsMap == null)
+					clsMap = mappings.addCls(cls, null);
+				typ = new ClsTypeDesc(clsMap);
 			}
 		}
 		return typ;

@@ -3,11 +3,16 @@ package com.hea3ven.tools.mappings.parser.srg;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.nio.file.StandardOpenOption;
 
 import org.junit.Test;
 
 import com.hea3ven.tools.mappings.*;
 import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.junit.Assert.assertTrue;
 
 public class SrgMappingsParserTest {
 
@@ -59,8 +64,8 @@ public class SrgMappingsParserTest {
 
 		Mapping mapping = parse(parser, "CL: a/b$c a/b$d");
 
-		assertEquals("mapping parsed", new ClsMapping("a/b", null), mapping.getCls("a/b"));
-		assertEquals("mapping parsed", new ClsMapping(new ClsMapping("a/b", null), "c", "d"),
+		assertEquals("mapping parsed", new ClsMapping("a/b", "a/b"), mapping.getCls("a/b"));
+		assertEquals("mapping parsed", new ClsMapping(new ClsMapping("a/b", "a/b"), "c", "d"),
 				mapping.getCls("a/b$c"));
 	}
 
@@ -88,6 +93,17 @@ public class SrgMappingsParserTest {
 	}
 
 	@Test
+	public void parse_fieldWithDollarSign_parsesTheFld() {
+		SrgMappingsParser parser = new SrgMappingsParser();
+
+		Mapping mapping = parse(parser, "FD: a/b/e c/d/$VALUES");
+
+		assertEquals("mapping parsed", new ClsMapping("a/b", "c/d"), mapping.getCls("a/b"));
+		assertEquals("mapping parsed", new FldMapping(new ClsMapping("a/b", "c/d"), "e", "$VALUES", null),
+				mapping.getFld("a/b/e"));
+	}
+
+	@Test
 	public void parse_method_parsesTheMethod() {
 		SrgMappingsParser parser = new SrgMappingsParser();
 
@@ -96,7 +112,7 @@ public class SrgMappingsParserTest {
 		assertEquals("mapping parsed", new ClsMapping("a/b", "c/d"), mapping.getCls("a/b"));
 		assertEquals("mapping parsed", new MthdMapping(new ClsMapping("a/b", "c/d"), "e", "f",
 						new Desc(BuiltInTypeDesc.VOID, BuiltInTypeDesc.INTEGER, BuiltInTypeDesc.FLOAT)),
-				mapping.getMthd("a/b/e"));
+				mapping.getMthd("a/b/e", "(IF)V"));
 	}
 
 	@Test
@@ -109,7 +125,7 @@ public class SrgMappingsParserTest {
 		assertEquals("mapping parsed",
 				new MthdMapping(new ClsMapping(new ClsMapping("a/b", "c/d"), "e", "f"), "g", "h",
 						new Desc(BuiltInTypeDesc.VOID, BuiltInTypeDesc.INTEGER, BuiltInTypeDesc.FLOAT)),
-				mapping.getMthd("a/b$e/g"));
+				mapping.getMthd("a/b$e/g", "(IF)V"));
 	}
 
 	@Test
@@ -121,7 +137,8 @@ public class SrgMappingsParserTest {
 
 		assertEquals("mapping parsed", new ClsMapping("a/b", "c/d"), mapping.getCls("a/b"));
 		assertEquals("mapping parsed", new MthdMapping(new ClsMapping("a/b", "c/d"), "e", "f",
-				new Desc(new ClsTypeDesc(new ClsMapping("java/lang/String", null)), BuiltInTypeDesc.INTEGER,
-						new ClsTypeDesc(new ClsMapping("a/b", "c/d")))), mapping.getMthd("a/b/e"));
+						new Desc(new ClsTypeDesc(new ClsMapping("java/lang/String", null)), BuiltInTypeDesc.INTEGER,
+								new ClsTypeDesc(new ClsMapping("a/b", "c/d")))),
+				mapping.getMthd("a/b/e", "(ILa/b;)Ljava/lang/String;"));
 	}
 }

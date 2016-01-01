@@ -27,7 +27,7 @@ public class ArrayTypeDesc extends TypeDesc {
 		if (this == other)
 			return true;
 
-		if (!(other instanceof TypeDesc))
+		if (!(other instanceof ArrayTypeDesc))
 			return false;
 
 		ArrayTypeDesc otherMapping = (ArrayTypeDesc) other;

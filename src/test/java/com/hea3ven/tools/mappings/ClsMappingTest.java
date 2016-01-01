@@ -61,7 +61,7 @@ public class ClsMappingTest {
 
 	@Test
 	public void initialization_invalidCharacters_throwsException() {
-		String invalidChars = "$#@!%^&*()=-";
+		String invalidChars = "#@!%^&*()=-";
 		for (int i = 0; i < invalidChars.length(); i++) {
 			try {
 				new ClsMapping("c" + invalidChars.charAt(i), "f");
@@ -74,7 +74,7 @@ public class ClsMappingTest {
 
 	@Test
 	public void initialization_validCharacters_doesntThrowsException() {
-		String validChars = "_/";
+		String validChars = "_/$";
 		for (int i = 0; i < validChars.length(); i++) {
 			new ClsMapping("c" + validChars.charAt(i) + "d", "f");
 		}

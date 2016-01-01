@@ -1,5 +1,6 @@
 	* Add srg mappings parser.
 	* Add IdentityMapping for deobfuscated environments.
+	* Major performance improvement and api changes.
 
 v1.0.1:
 	* add methods to run in deobfuscated environment.

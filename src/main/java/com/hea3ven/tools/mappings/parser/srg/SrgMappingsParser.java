@@ -2,10 +2,16 @@ package com.hea3ven.tools.mappings.parser.srg;
 
 import java.io.*;
 
+import com.google.common.base.CharMatcher;
+import com.google.common.base.Splitter;
+import com.google.common.collect.Iterables;
+
 import com.hea3ven.tools.mappings.*;
 
 public class SrgMappingsParser {
 	private Mapping mapping = new Mapping();
+
+	private Splitter splitter = Splitter.on(CharMatcher.WHITESPACE);
 
 	public Mapping add(InputStream stream) throws IOException {
 		return add(new InputStreamReader(stream));
@@ -20,49 +26,19 @@ public class SrgMappingsParser {
 	}
 
 	private void parseLine(String line) {
-		String[] parts = line.split(":");
-		if (parts[0].equals("CL")) {
-			parts = parts[1].trim().split("\\s");
-			ClsMapping cls = mapping.getCls(parts[0]);
-			cls.setDst((!parts[1].contains("$")) ? parts[1] : parts[1].split("\\$")[1]);
-		} else if (parts[0].equals("FD")) {
-			parts = parts[1].trim().split("\\s");
-			int srcSplit = parts[0].lastIndexOf('/');
-			int dstSplit = parts[1].lastIndexOf('/');
-			String srcClsName = parts[0].substring(0, srcSplit);
-			String srcFldName = parts[0].substring(srcSplit + 1);
-			String dstClsName = parts[1].substring(0, dstSplit);
-			String dstFldName = parts[1].substring(dstSplit + 1);
-			ClsMapping cls = mapping.getCls(srcClsName);
-			if (cls.getDstName() == null && !srcClsName.equals(dstClsName)) {
-				if (!dstClsName.contains("$"))
-					cls.setDst(dstClsName);
-				else {
-					if (cls.getParent().getDstName() == null)
-						cls.getParent().setDst(dstClsName.split("\\$")[0]);
-					cls.setDst(dstClsName.split("\\$")[1]);
-				}
-			}
-			mapping.add(new FldMapping(cls, srcFldName, dstFldName, null));
-		} else if (parts[0].equals("MD")) {
-			parts = parts[1].trim().split("\\s");
-			int srcSplit = parts[0].lastIndexOf('/');
-			int dstSplit = parts[2].lastIndexOf('/');
-			String srcClsName = parts[0].substring(0, srcSplit);
-			String srcFldName = parts[0].substring(srcSplit + 1);
-			String dstClsName = parts[2].substring(0, dstSplit);
-			String dstFldName = parts[2].substring(dstSplit + 1);
-			ClsMapping cls = mapping.getCls(srcClsName);
-			if (cls.getDstName() == null && !srcClsName.equals(dstClsName)) {
-				if (!dstClsName.contains("$"))
-					cls.setDst(dstClsName);
-				else {
-					if (cls.getParent().getDstName() == null)
-						cls.getParent().setDst(dstClsName.split("\\$")[0]);
-					cls.setDst(dstClsName.split("\\$")[1]);
-				}
-			}
-			mapping.add(new MthdMapping(cls, srcFldName, dstFldName, Desc.parse(mapping, parts[1])));
+		String type = line.substring(0, line.indexOf(':'));
+		String value = line.substring(line.indexOf(':') + 1).trim();
+		if (type.equals("CL")) {
+			String[] parts = Iterables.toArray(splitter.split(value), String.class);
+//			ClsMapping cls = mapping.getCls("asd");
+//			cls.setDst((!parts[1].contains("$")) ? parts[1] : parts[1].split("\\$")[1]);
+			mapping.addCls(parts[0], parts[1]);
+		} else if (type.equals("FD")) {
+			String[] parts = Iterables.toArray(splitter.split(value), String.class);
+			mapping.addFld(parts[0], parts[1]);
+		} else if (type.equals("MD")) {
+			String[] parts = Iterables.toArray(splitter.split(value), String.class);
+			mapping.addMthd(parts[0], parts[2], parts[1]);
 		}
 	}
 }

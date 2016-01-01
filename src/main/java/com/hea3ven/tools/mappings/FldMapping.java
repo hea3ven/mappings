@@ -36,7 +36,7 @@ public class FldMapping extends ElementMapping {
 
 	@Override
 	public String toString() {
-		return String.format("<FldMapping '%s %s' -> '%s %s'>", getSrcPath(), desc.getSrc(),
-				getDstPath(), desc.getDst());
+		return String.format("<FldMapping '%s %s' -> '%s %s'>", getSrcPath(),
+				(desc != null) ? desc.getSrc() : "", getDstPath(), (desc != null) ? desc.getDst() : "");
 	}
 }
