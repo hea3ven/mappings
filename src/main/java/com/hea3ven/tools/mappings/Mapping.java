@@ -57,7 +57,9 @@ public class Mapping {
 		String srcCls = src.substring(0, srcIdx);
 		ClsMapping parent = (ClsMapping) elementsBySrc.get(srcCls);
 		if (parent == null) {
-			parent = addCls(srcCls, dst.substring(0, dstIdx));
+			parent = (ClsMapping) elementsByDst.get(srcCls);
+			if (parent == null)
+				parent = addCls(srcCls, dst.substring(0, dstIdx));
 		}
 		FldMapping fldMap = new FldMapping(parent, src.substring(srcIdx + 1), dst.substring(dstIdx + 1),
 				desc != null ? Desc.parse(this, desc) : null);
@@ -73,7 +75,9 @@ public class Mapping {
 		String srcCls = src.substring(0, srcIdx);
 		ClsMapping parent = (ClsMapping) elementsBySrc.get(srcCls);
 		if (parent == null) {
-			parent = addCls(srcCls, dst.substring(0, dstIdx));
+			parent = (ClsMapping) elementsByDst.get(srcCls);
+			if (parent == null)
+				parent = addCls(srcCls, dst.substring(0, dstIdx));
 		}
 		MthdMapping mthdMap = new MthdMapping(parent, src.substring(srcIdx + 1), dst.substring(dstIdx + 1),
 				Desc.parse(this, desc));
