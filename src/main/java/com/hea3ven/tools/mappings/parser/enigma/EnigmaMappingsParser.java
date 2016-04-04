@@ -5,15 +5,7 @@ import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.hea3ven.tools.mappings.ArrayTypeDesc;
-import com.hea3ven.tools.mappings.ClsMapping;
-import com.hea3ven.tools.mappings.ClsTypeDesc;
-import com.hea3ven.tools.mappings.Desc;
-import com.hea3ven.tools.mappings.ElementMapping;
-import com.hea3ven.tools.mappings.FldMapping;
-import com.hea3ven.tools.mappings.Mapping;
-import com.hea3ven.tools.mappings.MthdMapping;
-import com.hea3ven.tools.mappings.TypeDesc;
+import com.hea3ven.tools.mappings.*;
 import com.hea3ven.tools.mappings.parser.IMappingsParser;
 
 public class EnigmaMappingsParser implements IMappingsParser {
