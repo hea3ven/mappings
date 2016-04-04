@@ -3,9 +3,6 @@ package com.hea3ven.tools.mappings.parser.srg;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.StringReader;
-import java.nio.file.Files;
-import java.nio.file.Paths;
-import java.nio.file.StandardOpenOption;
 
 import org.junit.Test;
 
@@ -22,7 +19,8 @@ public class SrgMappingsParserTest {
 
 	private Mapping parse(SrgMappingsParser parser, String data) {
 		try {
-			return parser.add(getReader(data));
+			parser.parse(getReader(data));
+			return parser.getMapping();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}

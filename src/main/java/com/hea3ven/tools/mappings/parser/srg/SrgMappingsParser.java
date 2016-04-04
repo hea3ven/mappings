@@ -1,5 +1,7 @@
 package com.hea3ven.tools.mappings.parser.srg;
 
+import sun.reflect.generics.reflectiveObjects.NotImplementedException;
+
 import java.io.*;
 
 import com.google.common.base.CharMatcher;
@@ -7,22 +9,42 @@ import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
 import com.hea3ven.tools.mappings.*;
+import com.hea3ven.tools.mappings.parser.IMappingsParser;
 
-public class SrgMappingsParser {
+public class SrgMappingsParser implements IMappingsParser {
 	private Mapping mapping = new Mapping();
 
 	private Splitter splitter = Splitter.on(CharMatcher.WHITESPACE);
 
-	public Mapping add(InputStream stream) throws IOException {
-		return add(new InputStreamReader(stream));
+	public SrgMappingsParser() {
+		this(new Mapping());
 	}
 
-	public Mapping add(Reader reader) throws IOException {
+	public SrgMappingsParser(Mapping mapping) {
+		this.mapping = mapping;
+	}
+
+	@Override
+	public Mapping getMapping() {
+		return mapping;
+	}
+
+	@Override
+	public void setMapping(Mapping mapping) {
+		this.mapping = mapping;
+	}
+
+	@Override
+	public void parse(InputStream stream) throws IOException {
+		parse(new InputStreamReader(stream));
+	}
+
+	@Override
+	public void parse(Reader reader) throws IOException {
 		BufferedReader br = new BufferedReader(reader);
 		for (String line = br.readLine(); line != null; line = br.readLine()) {
 			parseLine(line);
 		}
-		return mapping;
 	}
 
 	private void parseLine(String line) {
@@ -40,5 +62,33 @@ public class SrgMappingsParser {
 			String[] parts = Iterables.toArray(splitter.split(value), String.class);
 			mapping.addMthd(parts[0], parts[2], parts[1]);
 		}
+	}
+
+	@Override
+	public void write(OutputStream stream) throws IOException {
+		write(new OutputStreamWriter(stream));
+	}
+
+	@Override
+	public void write(Writer writer) throws IOException {
+		throw new NotImplementedException();
+	}
+
+	/**
+	 * @deprecated Use {@link #parse(InputStream)}.
+	 */
+	@Deprecated
+	public Mapping add(InputStream stream) throws IOException {
+		parse(stream);
+		return getMapping();
+	}
+
+	/**
+	 * @deprecated Use {@link #parse(Reader)}.
+	 */
+	@Deprecated
+	public Mapping add(Reader reader) throws IOException {
+		parse(reader);
+		return getMapping();
 	}
 }

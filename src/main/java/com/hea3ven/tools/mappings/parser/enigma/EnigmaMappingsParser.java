@@ -1,24 +1,11 @@
 package com.hea3ven.tools.mappings.parser.enigma;
 
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStream;
-import java.io.InputStreamReader;
-import java.io.Reader;
-import java.io.Writer;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Stack;
+import java.io.*;
+import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import com.google.common.collect.Maps;
-
-import com.hea3ven.tools.mappings.ArgMapping;
 import com.hea3ven.tools.mappings.ArrayTypeDesc;
-import com.hea3ven.tools.mappings.BuiltInTypeDesc;
 import com.hea3ven.tools.mappings.ClsMapping;
 import com.hea3ven.tools.mappings.ClsTypeDesc;
 import com.hea3ven.tools.mappings.Desc;
@@ -27,8 +14,9 @@ import com.hea3ven.tools.mappings.FldMapping;
 import com.hea3ven.tools.mappings.Mapping;
 import com.hea3ven.tools.mappings.MthdMapping;
 import com.hea3ven.tools.mappings.TypeDesc;
+import com.hea3ven.tools.mappings.parser.IMappingsParser;
 
-public class EnigmaMappingsParser {
+public class EnigmaMappingsParser implements IMappingsParser {
 
 	private static class ScopeEntry {
 		public String indent;
@@ -57,7 +45,7 @@ public class EnigmaMappingsParser {
 		}
 	}
 
-	private Mapping mapping = new Mapping();
+	private Mapping mapping;
 
 	private ScopeManager scope = new ScopeManager();
 	private MthdMapping currentMthd = null;
@@ -67,16 +55,31 @@ public class EnigmaMappingsParser {
 	private Pattern mthdPattern = Pattern.compile("^(\\s*)METHOD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
 	private Pattern argPattern = Pattern.compile("^(\\s*)ARG\\s+(\\d+)\\s+(\\S+)\\s*$");
 
-	public Mapping add(InputStream stream) throws IOException {
-		return add(new InputStreamReader(stream));
+	public EnigmaMappingsParser() {
+		this(new Mapping());
 	}
 
-	public Mapping add(Reader reader) throws IOException {
+	public EnigmaMappingsParser(Mapping mapping) {
+		this.mapping = mapping;
+	}
+
+	public Mapping getMapping() {
+		return mapping;
+	}
+
+	public void setMapping(Mapping mapping) {
+		this.mapping = mapping;
+	}
+
+	public void parse(InputStream stream) throws IOException {
+		parse(new InputStreamReader(stream));
+	}
+
+	public void parse(Reader reader) throws IOException {
 		BufferedReader br = new BufferedReader(reader);
 		for (String line = br.readLine(); line != null; line = br.readLine()) {
 			parseLine(line);
 		}
-		return mapping;
 	}
 
 	private void parseLine(String line) {
@@ -111,7 +114,7 @@ public class EnigmaMappingsParser {
 
 		m = argPattern.matcher(line);
 		if (m.matches()) {
-//			mapping.add(new ArgMapping(currentMthd, Integer.parseInt(m.group(2)), m.group(3)));
+//			mapping.parse(new ArgMapping(currentMthd, Integer.parseInt(m.group(2)), m.group(3)));
 		}
 	}
 
@@ -120,7 +123,11 @@ public class EnigmaMappingsParser {
 		return mapping.getCls(name);
 	}
 
-	public void write(Mapping mapping, Writer writer) throws IOException {
+	public void write(OutputStream stream) throws IOException {
+		write(new OutputStreamWriter(stream));
+	}
+
+	public void write(Writer writer) throws IOException {
 		List<ClsMapping> out = new ArrayList<ClsMapping>();
 		for (ElementMapping elem : mapping.getAll()) {
 			if (elem instanceof ClsMapping) {
@@ -130,7 +137,7 @@ public class EnigmaMappingsParser {
 				}
 			}
 		}
-		out.sort(new Comparator<ClsMapping>() {
+		Collections.sort(out, new Comparator<ClsMapping>() {
 			@Override
 			public int compare(ClsMapping o1, ClsMapping o2) {
 				return o1.getSrcPath().compareTo(o2.getSrcPath());
@@ -172,8 +179,12 @@ public class EnigmaMappingsParser {
 						mthdMap.getDstName(), descToString(mthdMap.getDesc())));
 			} else if (elem instanceof FldMapping) {
 				FldMapping fldMap = (FldMapping) elem;
-				writer.write(String.format("%s\tFIELD %s %s %s\n", indent, fldMap.getSrcName(),
-						fldMap.getDstName(), descToString(fldMap.getDesc())));
+				if (fldMap.getDesc() != null)
+					writer.write(String.format("%s\tFIELD %s %s %s\n", indent, fldMap.getSrcName(),
+							fldMap.getDstName(), descToString(fldMap.getDesc())));
+				else
+					writer.write(String.format("%s\tFIELD %s %s\n", indent, fldMap.getSrcName(),
+							fldMap.getDstName()));
 			} else if (elem instanceof ClsMapping) {
 				ClsMapping innerClsMap = (ClsMapping) elem;
 				writeCls(writer, innerClsMap, indent + "\t");
@@ -214,5 +225,32 @@ public class EnigmaMappingsParser {
 		if (clsMap.getParent() != null)
 			return topParentHasPkg(clsMap.getParent());
 		return clsMap.getSrcScope() != null;
+	}
+
+	/**
+	 * @deprecated Use {@link #parse(InputStream)}.
+	 */
+	@Deprecated
+	public Mapping add(InputStream stream) throws IOException {
+		parse(stream);
+		return getMapping();
+	}
+
+	/**
+	 * @deprecated Use {@link #parse(Reader)}.
+	 */
+	@Deprecated
+	public Mapping add(Reader reader) throws IOException {
+		parse(reader);
+		return getMapping();
+	}
+
+	/**
+	 * @deprecated Use {@link #write(Writer)}.
+	 */
+	@Deprecated
+	public void write(Mapping mapping, Writer writer) throws IOException {
+		setMapping(mapping);
+		write(writer);
 	}
 }

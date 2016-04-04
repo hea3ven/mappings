@@ -91,7 +91,7 @@ public class MappingTest {
 //	@Test
 //	public void getFld_getByDstWithoutMapping_returnsTheCorrectFld() {
 //		Mapping map = new Mapping();
-//		map.add(new ClsMapping("a/b", "c/d"));
+//		map.parse(new ClsMapping("a/b", "c/d"));
 //
 //		assertEquals(new ClsMapping("a/b", "c/d"), map.getCls("c/d"));
 //		assertEquals(new FldMapping(new ClsMapping("a/b", "c/d"), "e", null,

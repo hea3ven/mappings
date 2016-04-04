@@ -11,7 +11,6 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import com.hea3ven.tools.mappings.ArgMapping;
-import com.hea3ven.tools.mappings.ArrayTypeDesc;
 import com.hea3ven.tools.mappings.BuiltInTypeDesc;
 import com.hea3ven.tools.mappings.ClsMapping;
 import com.hea3ven.tools.mappings.ClsTypeDesc;
@@ -19,8 +18,6 @@ import com.hea3ven.tools.mappings.Desc;
 import com.hea3ven.tools.mappings.FldMapping;
 import com.hea3ven.tools.mappings.Mapping;
 import com.hea3ven.tools.mappings.MthdMapping;
-import com.hea3ven.tools.mappings.TypeDesc;
-import com.hea3ven.tools.mappings.parser.enigma.EnigmaMappingsParser;
 
 public class EnigmaMappingsParserTest {
 
@@ -30,7 +27,8 @@ public class EnigmaMappingsParserTest {
 
 	private Mapping parse(EnigmaMappingsParser parser, String data) {
 		try {
-			return parser.add(getReader(data));
+			parser.parse(getReader(data));
+			return parser.getMapping();
 		} catch (IOException e) {
 			throw new RuntimeException(e);
 		}
@@ -196,51 +194,51 @@ public class EnigmaMappingsParserTest {
 
 	@Test
 	public void write_Cls() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a/b", "c/d");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS a/b c/d\n", sw.toString());
 	}
 
 	@Test
 	public void write_ClsSorted() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("e/f", "g/h");
 		mapping.addCls("a/b", "c/d");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS a/b c/d\nCLASS e/f g/h\n", sw.toString());
 	}
 
 	@Test
 	public void write_Mthd() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a/b", "c/d");
 		mapping.addMthd("a/b/e", "c/d/f", "(F)La/b;");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS a/b c/d\n\tMETHOD e f (F)La/b;\n", sw.toString());
 	}
 
 	@Test
 	public void write_MthdWithNoParams() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a/b", "c/d");
 		mapping.addMthd("a/b/e", "c/d/f", "()La/b;");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS a/b c/d\n\tMETHOD e f ()La/b;\n", sw.toString());
 	}
@@ -248,26 +246,26 @@ public class EnigmaMappingsParserTest {
 	@Test
 	@Ignore
 	public void write_Fld() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a/b", "c/d");
 		mapping.addFld("a/b/e", "c/d/f");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS a/b c/d\n\tFIELD e f La/b;\n", sw.toString());
 	}
 
 	@Test
 	public void write_InnerCls() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a/b", "c/d");
 		mapping.addCls("a/b$e", "c/d$f");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS a/b c/d\n\tCLASS a/b$e f\n", sw.toString());
 	}
@@ -275,14 +273,14 @@ public class EnigmaMappingsParserTest {
 	@Test
 	@Ignore
 	public void write_InnerClsInDesc() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a/b", "c/d");
 		mapping.addCls("a/b$e", "c/d$f");
 		mapping.addFld("a/b$e/g", "c/d$f/h");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS a/b c/d\n\tCLASS a/b$e f\n\tFIELD g h La/b$e;\n", sw.toString());
 	}
@@ -290,14 +288,14 @@ public class EnigmaMappingsParserTest {
 	@Test
 	@Ignore
 	public void write_InnerClsInDescWithNoPkg() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a", "b/c");
 		mapping.addCls("a$d", "b/c$e");
 		mapping.addFld("a$d/f", "b/c$e/g");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS none/a b/c\n\tCLASS none/a$d e\n\tFIELD f g Lnone/a$d;\n", sw.toString());
 	}
@@ -305,27 +303,27 @@ public class EnigmaMappingsParserTest {
 	@Test
 	@Ignore
 	public void write_ArrayInDescWithNoPkg() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a", "b/c");
 		mapping.addFld("a/d", "b/c/e");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS none/a b/c\n\tFIELD d e [Lnone/a;\n", sw.toString());
 	}
 
 	@Test
 	public void write_InnerMthd() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a/b", "c/d");
 		mapping.addCls("a/b$e", "c/d$f");
 		mapping.addMthd("a/b$e/g", "c/d$f/h", "(F)La/b;");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS a/b c/d\n\tCLASS a/b$e f\n\t\tMETHOD g h (F)La/b;\n", sw.toString());
 	}
@@ -333,52 +331,52 @@ public class EnigmaMappingsParserTest {
 	@Test
 	@Ignore
 	public void write_InnerFld() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a/b", "c/d");
 		mapping.addCls("a/b$e", "c/d$f");
 		mapping.addFld("a/b$e/g", "c/d$f/h");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS a/b c/d\n\tCLASS a/b$e f\n\t\tFIELD g h La/b;\n", sw.toString());
 	}
 
 	@Test
 	public void write_ClsNoPkg() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a", "b/c");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS none/a b/c\n", sw.toString());
 	}
 
 	@Test
 	public void write_InnerClsNoPkg() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a", "b/c");
 		mapping.addCls("a$d", "b/c$e");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS none/a b/c\n\tCLASS none/a$d e\n", sw.toString());
 	}
 
 	@Test
 	public void write_DescNoPkg() throws IOException {
-		EnigmaMappingsParser parser = new EnigmaMappingsParser();
 		Mapping mapping = new Mapping();
 		mapping.addCls("a", "b/c");
 		mapping.addMthd("a/d", "b/c/e", "(La;)La;");
 
 		StringWriter sw = new StringWriter();
-		parser.write(mapping, sw);
+		EnigmaMappingsParser parser = new EnigmaMappingsParser(mapping);
+		parser.write(sw);
 
 		assertEquals("CLASS none/a b/c\n\tMETHOD d e (Lnone/a;)Lnone/a;\n", sw.toString());
 	}
