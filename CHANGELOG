@@ -1,3 +1,7 @@
+v1.1.1:
+	* Add a proper interface for the parsers and deprecate the old methods.
+	* Fix crash in the enigma parser when writing a field without description, fixes #2.
+
 v1.1.0:
 	* Add srg mappings parser.
 	* Add IdentityMapping for deobfuscated environments.
