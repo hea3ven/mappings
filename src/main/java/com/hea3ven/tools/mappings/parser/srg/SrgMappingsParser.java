@@ -48,17 +48,22 @@ public class SrgMappingsParser implements IMappingsParser {
 	private void parseLine(String line) {
 		String type = line.substring(0, line.indexOf(':'));
 		String value = line.substring(line.indexOf(':') + 1).trim();
-		if (type.equals("CL")) {
-			String[] parts = Iterables.toArray(splitter.split(value), String.class);
-//			ClsMapping cls = mapping.getCls("asd");
-//			cls.setDst((!parts[1].contains("$")) ? parts[1] : parts[1].split("\\$")[1]);
-			mapping.addCls(parts[0], parts[1]);
-		} else if (type.equals("FD")) {
-			String[] parts = Iterables.toArray(splitter.split(value), String.class);
-			mapping.addFld(parts[0], parts[1]);
-		} else if (type.equals("MD")) {
-			String[] parts = Iterables.toArray(splitter.split(value), String.class);
-			mapping.addMthd(parts[0], parts[2], parts[1]);
+		switch (type) {
+			case "CL": {
+				String[] parts = Iterables.toArray(splitter.split(value), String.class);
+				mapping.addCls(parts[0], parts[1]);
+				break;
+			}
+			case "FD": {
+				String[] parts = Iterables.toArray(splitter.split(value), String.class);
+				mapping.addFld(parts[0], parts[1]);
+				break;
+			}
+			case "MD": {
+				String[] parts = Iterables.toArray(splitter.split(value), String.class);
+				mapping.addMthd(parts[0], parts[2], parts[1]);
+				break;
+			}
 		}
 	}
 

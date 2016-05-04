@@ -81,7 +81,7 @@ public class Desc {
 		if (desc.charAt(0) != '(')
 			return new Desc(parseType(mappings, desc));
 		int i = 1;
-		List<TypeDesc> params = new ArrayList<TypeDesc>();
+		List<TypeDesc> params = new ArrayList<>();
 		while (desc.charAt(i) != ')') {
 			params.add(parseType(mappings, desc.substring(i)));
 			i += typeDescLength(desc.substring(i));

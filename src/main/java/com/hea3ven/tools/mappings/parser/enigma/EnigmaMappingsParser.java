@@ -4,6 +4,7 @@ import java.io.*;
 import java.util.*;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
 import com.hea3ven.tools.mappings.*;
 import com.hea3ven.tools.mappings.parser.IMappingsParser;
@@ -22,7 +23,7 @@ public class EnigmaMappingsParser implements IMappingsParser {
 
 	private static class ScopeManager {
 
-		private Stack<ScopeEntry> stack = new Stack<ScopeEntry>();
+		private Stack<ScopeEntry> stack = new Stack<>();
 
 		public void addScope(String indent, ClsMapping cls) {
 			while (!stack.isEmpty() && stack.peek().indent.length() > indent.length())
@@ -120,21 +121,12 @@ public class EnigmaMappingsParser implements IMappingsParser {
 	}
 
 	public void write(Writer writer) throws IOException {
-		List<ClsMapping> out = new ArrayList<ClsMapping>();
-		for (ElementMapping elem : mapping.getAll()) {
-			if (elem instanceof ClsMapping) {
-				ClsMapping clsMap = (ClsMapping) elem;
-				if (clsMap.getParent() == null) {
-					out.add(clsMap);
-				}
-			}
-		}
-		Collections.sort(out, new Comparator<ClsMapping>() {
-			@Override
-			public int compare(ClsMapping o1, ClsMapping o2) {
-				return o1.getSrcPath().compareTo(o2.getSrcPath());
-			}
-		});
+		List<ClsMapping> out = mapping.getAll()
+				.stream()
+				.filter(elem -> elem instanceof ClsMapping && ((ClsMapping) elem).getParent() == null)
+				.sorted((o1, o2) -> o1.getSrcPath().compareTo(o2.getSrcPath()))
+				.map(elem -> (ClsMapping) elem)
+				.collect(Collectors.toList());
 
 		for (ClsMapping clsMap : out) {
 			writeCls(writer, clsMap, "");

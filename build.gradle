@@ -13,8 +13,8 @@ version = "1.1.1"
 group = "com.hea3ven.tools.mappings"
 archivesBaseName = "h3nt-mappings"
 
-sourceCompatibility = 1.7
-targetCompatibility = 1.7
+sourceCompatibility = 1.8
+targetCompatibility = 1.8
 
 dependencies {
 	compile 'org.ow2.asm:asm-debug-all:5.0.3'
