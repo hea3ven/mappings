@@ -31,8 +31,8 @@ public class MthdMapping extends ElementMapping {
 	}
 
 	private boolean matches(String path, String desc) {
-		return (getSrcPath().equals(path) && this.desc.getSrc().equals(desc))
-				|| (getDstPath().equals(path) && this.desc.getDst().equals(desc));
+		return (getSrcPath().equals(path) && this.desc.getSrc().equals(desc)) ||
+				(getDstPath().equals(path) && this.desc.getDst().equals(desc));
 	}
 
 	@Override
@@ -42,12 +42,12 @@ public class MthdMapping extends ElementMapping {
 		if (getClass() != other.getClass())
 			return false;
 		MthdMapping otherFld = (MthdMapping) other;
-		return ((desc == null && otherFld.desc == null) || desc.equals(otherFld.desc));
+		return ((desc == null && otherFld.desc == null) || (desc != null && desc.equals(otherFld.desc)));
 	}
 
 	@Override
 	public String toString() {
-		return String.format("<MthdMapping '%s %s' -> '%s %s'>", getSrcPath(), desc.getSrc(),
-				getDstPath(), desc.getDst());
+		return String.format("<MthdMapping '%s %s' -> '%s %s'>", getSrcPath(), desc.getSrc(), getDstPath(),
+				desc.getDst());
 	}
 }

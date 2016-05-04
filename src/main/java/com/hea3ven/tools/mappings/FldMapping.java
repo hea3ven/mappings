@@ -31,7 +31,7 @@ public class FldMapping extends ElementMapping {
 		if (!super.equals(other))
 			return false;
 		FldMapping otherFld = (FldMapping) other;
-		return ((desc == null && otherFld.desc == null) || desc.equals(otherFld.desc));
+		return ((desc == null && otherFld.desc == null) || (desc != null && desc.equals(otherFld.desc)));
 	}
 
 	@Override

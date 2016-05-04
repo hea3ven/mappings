@@ -84,7 +84,7 @@ public class Desc {
 		List<TypeDesc> params = new ArrayList<TypeDesc>();
 		while (desc.charAt(i) != ')') {
 			params.add(parseType(mappings, desc.substring(i)));
-			i += typeDescLenght(desc.substring(i));
+			i += typeDescLength(desc.substring(i));
 		}
 
 		return new Desc(parseType(mappings, desc.substring(i + 1)), params.toArray(new TypeDesc[0]));
@@ -106,7 +106,7 @@ public class Desc {
 		return typ;
 	}
 
-	private static int typeDescLenght(String typeData) {
+	private static int typeDescLength(String typeData) {
 		if (BuiltInTypeDesc.get(typeData.charAt(0)) != null)
 			return 1;
 		if (typeData.charAt(0) == '[')

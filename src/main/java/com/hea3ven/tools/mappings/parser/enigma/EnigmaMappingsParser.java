@@ -40,7 +40,7 @@ public class EnigmaMappingsParser implements IMappingsParser {
 	private Mapping mapping;
 
 	private ScopeManager scope = new ScopeManager();
-	private MthdMapping currentMthd = null;
+//	private MthdMapping currentMthd = null;
 
 	private Pattern clsPattern = Pattern.compile("^(\\s*)CLASS\\s+(\\S+)\\s*(\\S*)\\s*$");
 	private Pattern fldPattern = Pattern.compile("^(\\s*)FIELD\\s+(\\S+)\\s+(\\S+)\\s+(\\S+)\\s*$");
@@ -99,15 +99,15 @@ public class EnigmaMappingsParser implements IMappingsParser {
 		m = mthdPattern.matcher(line);
 		if (m.matches()) {
 			ClsMapping cls = this.scope.getScope(m.group(1));
-			currentMthd =
-					mapping.addMthd(cls.getSrcPath() + "/" + m.group(2), cls.getDstPath() + "/" + m.group(3),
-							m.group(4));
+//			currentMthd =
+			mapping.addMthd(cls.getSrcPath() + "/" + m.group(2), cls.getDstPath() + "/" + m.group(3),
+					m.group(4));
 		}
 
-		m = argPattern.matcher(line);
-		if (m.matches()) {
+//		m = argPattern.matcher(line);
+//		if (m.matches()) {
 //			mapping.parse(new ArgMapping(currentMthd, Integer.parseInt(m.group(2)), m.group(3)));
-		}
+//		}
 	}
 
 	private ClsMapping getCls(String name) {
@@ -145,7 +145,7 @@ public class EnigmaMappingsParser implements IMappingsParser {
 		if (clsMap.getDstName() == null && clsMap.getChildren().size() == 0)
 			return;
 
-		String srcPath = null;
+		String srcPath;
 		if (!topParentHasPkg(clsMap)) {
 			if (indent.equals(""))
 				srcPath = "none/" + clsMap.getSrcName();
@@ -154,7 +154,7 @@ public class EnigmaMappingsParser implements IMappingsParser {
 		} else {
 			srcPath = clsMap.getSrcPath();
 		}
-		String dstPath = null;
+		String dstPath;
 		if (!clsMap.getSrcPath().equals(clsMap.getDstPath())) {
 			if (indent.equals(""))
 				dstPath = (clsMap.getDstPath() != null) ? clsMap.getDstPath() : "";

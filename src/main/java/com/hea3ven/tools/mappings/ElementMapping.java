@@ -116,7 +116,7 @@ public abstract class ElementMapping {
 		ElementMapping otherMapping = (ElementMapping) other;
 		return ((parent == null && otherMapping.parent == null) ||
 				(parent != null && parent.equals(otherMapping.parent))) && src.equals(otherMapping.src) &&
-				((dst == null && otherMapping.dst == null) || dst.equals(otherMapping.dst));
+				((dst == null && otherMapping.dst == null) || (dst != null && dst.equals(otherMapping.dst)));
 	}
 
 	@Override
