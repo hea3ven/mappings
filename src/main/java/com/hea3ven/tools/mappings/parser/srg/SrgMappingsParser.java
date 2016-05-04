@@ -1,14 +1,12 @@
 package com.hea3ven.tools.mappings.parser.srg;
 
-import sun.reflect.generics.reflectiveObjects.NotImplementedException;
-
 import java.io.*;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
 import com.google.common.collect.Iterables;
 
-import com.hea3ven.tools.mappings.*;
+import com.hea3ven.tools.mappings.Mapping;
 import com.hea3ven.tools.mappings.parser.IMappingsParser;
 
 public class SrgMappingsParser implements IMappingsParser {
@@ -71,7 +69,7 @@ public class SrgMappingsParser implements IMappingsParser {
 
 	@Override
 	public void write(Writer writer) throws IOException {
-		throw new NotImplementedException();
+		throw new RuntimeException("Not implemented");
 	}
 
 	/**
