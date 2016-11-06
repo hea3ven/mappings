@@ -1,90 +1,63 @@
 package com.hea3ven.tools.mappings;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.fail;
+import nl.jqno.equalsverifier.EqualsVerifier;
+import nl.jqno.equalsverifier.Warning;
 
+import com.google.common.collect.ImmutableMap;
 import org.junit.Test;
 
-import com.hea3ven.tools.mappings.ClsMapping;
-import com.hea3ven.tools.mappings.ElementMapping;
-import com.hea3ven.tools.mappings.MappingException;
+import static org.junit.Assert.assertEquals;
 
-public class ClsMappingTest {
+public class ClsMappingTest extends ElementMappingTestBase {
 
 	@Test
-	public void testFullInitialization() {
-		ClsMapping result = new ClsMapping("a/b/c", "d/e/f");
+	public void initialization_noParent_initializes() {
+		ClsMapping result = new ClsMapping(createPathMap("a", "b"));
 
-		assertEquals("source path", result.getSrcPath(), "a/b/c");
-		assertEquals("source package", result.getSrcScope(), "a/b");
-		assertEquals("source name", result.getSrcName(), "c");
-		assertEquals("destination path", result.getDstPath(), "d/e/f");
-		assertEquals("destination package", result.getDstScope(), "d/e");
-		assertEquals("destination package", result.getDstName(), "f");
+		assertEquals("obf path", "a", result.getName(ObfLevel.OBF));
+		assertEquals("deobf path", "b", result.getName(ObfLevel.DEOBF));
 	}
 
 	@Test
-	public void testFullInitializationFromDot() {
-		ClsMapping result = new ClsMapping("a.b.c", "d.e.f");
+	public void initialization_withParentClass_initializes() {
+		ClsMapping result =
+				new ClsMapping(new ClsMapping(createPathMap("a", "b")), createPathMap("c", "d"));
 
-		assertEquals("source path", result.getSrcPath(), "a/b/c");
-		assertEquals("source package", result.getSrcScope(), "a/b");
-		assertEquals("source name", result.getSrcName(), "c");
-		assertEquals("destination path", result.getDstPath(), "d/e/f");
-		assertEquals("destination package", result.getDstScope(), "d/e");
-		assertEquals("destination package", result.getDstName(), "f");
+		assertEquals("obf path", "c", result.getName(ObfLevel.OBF));
+		assertEquals("deobf path", "d", result.getName(ObfLevel.DEOBF));
+		assertEquals("obf path", "a$c", result.getPath(ObfLevel.OBF));
+		assertEquals("deobf path", "b$d", result.getPath(ObfLevel.DEOBF));
 	}
 
 	@Test
-	public void testInitializationWithoutPackage() {
-		ClsMapping result = new ClsMapping("c", "f");
+	public void initialization_withParentPackage_initializes() {
+		ClsMapping result =
+				new ClsMapping(new PkgMapping(createPathMap("a", "b")), createPathMap("c", "d"));
 
-		assertEquals("source path", result.getSrcPath(), "c");
-		assertEquals("source package", result.getSrcScope(), null);
-		assertEquals("source name", result.getSrcName(), "c");
-		assertEquals("destination path", result.getDstPath(), "f");
-		assertEquals("destination package", result.getDstScope(), null);
-		assertEquals("destination package", result.getDstName(), "f");
+		assertEquals("obf path", "c", result.getName(ObfLevel.OBF));
+		assertEquals("deobf path", "d", result.getName(ObfLevel.DEOBF));
+		assertEquals("obf path", "a/c", result.getPath(ObfLevel.OBF));
+		assertEquals("deobf path", "b/d", result.getPath(ObfLevel.DEOBF));
 	}
 
 	@Test
-	public void testInitializationInnerCls() {
-		ClsMapping result = new ClsMapping(new ClsMapping("a/b", "c/d"), "e", "f");
+	public void getPath_withParentPackageNoName_getsPath() {
+		ClsMapping result =
+				new ClsMapping(new PkgMapping(ImmutableMap.of(ObfLevel.OBF, "a")), createPathMap("b", "c"));
 
-		assertEquals("source path", result.getSrcPath(), "a/b$e");
-		assertEquals("source scope", result.getSrcScope(), "a/b");
-		assertEquals("source name", result.getSrcName(), "e");
-		assertEquals("destination path", result.getDstPath(), "c/d$f");
-		assertEquals("destination scope", result.getDstScope(), "c/d");
-		assertEquals("destination package", result.getDstName(), "f");
-	}
-
-	@Test
-	public void initialization_invalidCharacters_throwsException() {
-		String invalidChars = "#@!%^&*()=-";
-		for (int i = 0; i < invalidChars.length(); i++) {
-			try {
-				new ClsMapping("c" + invalidChars.charAt(i), "f");
-				fail("did not throw the exception for " + invalidChars.charAt(i));
-			} catch (MappingException e) {
-
-			}
-		}
-	}
-
-	@Test
-	public void initialization_validCharacters_doesntThrowsException() {
-		String validChars = "_/$";
-		for (int i = 0; i < validChars.length(); i++) {
-			new ClsMapping("c" + validChars.charAt(i) + "d", "f");
-		}
+		assertEquals("obf path", "a/b", result.getPath(ObfLevel.OBF));
+		assertEquals("deobf path", "c", result.getPath(ObfLevel.DEOBF));
 	}
 
 	@Test
 	public void testEquals() {
-		ElementMapping result = new ClsMapping("a/b/c", "d/e/f");
-
-		assertEquals("are equal", new ClsMapping("a/b/c", "d/e/f"), result);
+		EqualsVerifier.forClass(ClsMapping.class)
+				.withPrefabValues(ClsMapping.class, new ClsMapping(createPathMap("a", "b")),
+						new ClsMapping(createPathMap("c", "d")))
+				.withPrefabValues(ElementMapping.class, new ClsMapping(createPathMap("e", "f")),
+						new ClsMapping(createPathMap("g", "h")))
+				.suppress(Warning.ALL_FIELDS_SHOULD_BE_USED)
+				.withRedefinedSuperclass()
+				.verify();
 	}
-
 }

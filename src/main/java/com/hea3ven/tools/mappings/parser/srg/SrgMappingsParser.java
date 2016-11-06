@@ -4,13 +4,17 @@ import java.io.*;
 
 import com.google.common.base.CharMatcher;
 import com.google.common.base.Splitter;
+import com.google.common.collect.ImmutableMap;
 import com.google.common.collect.Iterables;
 
 import com.hea3ven.tools.mappings.Mapping;
+import com.hea3ven.tools.mappings.ObfLevel;
 import com.hea3ven.tools.mappings.parser.IMappingsParser;
 
 public class SrgMappingsParser implements IMappingsParser {
 	private Mapping mapping = new Mapping();
+	private final ObfLevel src;
+	private final ObfLevel dst;
 
 	private Splitter splitter = Splitter.on(CharMatcher.WHITESPACE);
 
@@ -19,7 +23,17 @@ public class SrgMappingsParser implements IMappingsParser {
 	}
 
 	public SrgMappingsParser(Mapping mapping) {
+		this(mapping, ObfLevel.OBF, ObfLevel.DEOBF);
+	}
+
+	public SrgMappingsParser(ObfLevel src, ObfLevel dst) {
+		this(new Mapping(), src, dst);
+	}
+
+	public SrgMappingsParser(Mapping mapping, ObfLevel src, ObfLevel dst) {
 		this.mapping = mapping;
+		this.src = src;
+		this.dst = dst;
 	}
 
 	@Override
@@ -51,20 +65,29 @@ public class SrgMappingsParser implements IMappingsParser {
 		switch (type) {
 			case "CL": {
 				String[] parts = Iterables.toArray(splitter.split(value), String.class);
-				mapping.addCls(parts[0], parts[1]);
+				mapping.addCls(ImmutableMap.of(src, parts[0], dst, parts[1]));
 				break;
 			}
 			case "FD": {
 				String[] parts = Iterables.toArray(splitter.split(value), String.class);
-				mapping.addFld(parts[0], parts[1]);
+				mapping.addFld(
+						ImmutableMap.of(src, parseMemberPath(parts[0]), dst, parseMemberPath(parts[1])), src,
+						"Z");
 				break;
 			}
 			case "MD": {
 				String[] parts = Iterables.toArray(splitter.split(value), String.class);
-				mapping.addMthd(parts[0], parts[2], parts[1]);
+				mapping.addMthd(
+						ImmutableMap.of(src, parseMemberPath(parts[0]), dst, parseMemberPath(parts[2])), src,
+						parts[1]);
 				break;
 			}
 		}
+	}
+
+	private String parseMemberPath(String part) {
+		int lastSep = part.lastIndexOf('/');
+		return part.substring(0, lastSep) + "." + part.substring(lastSep + 1);
 	}
 
 	@Override

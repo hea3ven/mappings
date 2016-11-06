@@ -1,13 +1,19 @@
 package com.hea3ven.tools.mappings;
 
+import java.util.Map;
+
 public class ClsMapping extends ElementMapping {
 
-	public ClsMapping(String src, String dst) {
-		super(src, dst);
+	public ClsMapping(Map<ObfLevel, String> names) {
+		super(null, names);
 	}
 
-	public ClsMapping(ClsMapping parent, String src, String dst) {
-		super(parent, src, (dst == null && isAnonymous(src)) ? src : dst);
+	public ClsMapping(ClsMapping parent, Map<ObfLevel, String> names) {
+		super(parent, names);
+	}
+
+	public ClsMapping(PkgMapping parent, Map<ObfLevel, String> names) {
+		super(parent, names);
 	}
 
 	private static boolean isAnonymous(String src) {
@@ -20,20 +26,30 @@ public class ClsMapping extends ElementMapping {
 
 	@Override
 	protected String getParentPathSep() {
-		return "$";
+		return parent instanceof PkgMapping ? "/" : "$";
 	}
 
-	public boolean matches(String path) {
-		return getSrcPath().equals(path) || (getDstPath() != null && getDstPath().equals(path));
+	public boolean matches(ObfLevel level, String path) {
+		return getPath(level).equals(path);
 	}
 
 	@Override
 	public String toString() {
-		// TODO: Fix
-		return String.format("<ClsMapping '%s' -> '%s'>", getSrcPath(), getDstPath());
+		return String.format("<ClsMapping '%s' -> '%s'>", getPath(ObfLevel.OBF), getPath(ObfLevel.DEOBF));
 	}
 
-	public ClsMapping getParent() {
-		return (ClsMapping) parent;
+	@Override
+	public final boolean equals(Object other) {
+		return super.equals(other);
+	}
+
+	@Override
+	public boolean canEqual(Object other) {
+		return other instanceof ClsMapping;
+	}
+
+	@Override
+	public final int hashCode() {
+		return super.hashCode();
 	}
 }

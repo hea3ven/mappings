@@ -30,12 +30,7 @@ public class BuiltInTypeDesc extends TypeDesc {
 	}
 
 	@Override
-	public String getSrc() {
-		return String.valueOf(desc);
-	}
-
-	@Override
-	public String getDst() {
+	public String get(ObfLevel level) {
 		return String.valueOf(desc);
 	}
 }

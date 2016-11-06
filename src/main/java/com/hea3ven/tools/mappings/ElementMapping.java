@@ -1,108 +1,44 @@
 package com.hea3ven.tools.mappings;
 
+import javax.annotation.Nonnull;
 import java.util.HashSet;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
+import java.util.stream.Collectors;
 
 public abstract class ElementMapping {
 
 	protected final ElementMapping parent;
-	protected final Set<ElementMapping> children;
-	private final String src;
-	private String dst;
+	@Nonnull
+	private final Map<ObfLevel, String> names;
 
-	private final String srcPath;
-	private final String dstPath;
-
-	public ElementMapping(String src, String dst) {
-		this(null, src, dst);
-	}
-
-	public ElementMapping(ElementMapping parent, String src, String dst) {
+	public ElementMapping(ElementMapping parent, Map<ObfLevel, String> names) {
+		if (names == null)
+			throw new IllegalArgumentException("names can not be null");
+		this.names = names;
 		this.parent = parent;
-		this.src = validate(src);
-		this.dst = validate(dst);
-		this.children = new HashSet<>();
-
-		if (parent != null)
-			srcPath = parent.getSrcPath() + getParentPathSep() + this.src;
-		else
-			srcPath = this.src;
-		if (parent != null) {
-			if (parent.getDstPath() != null)
-				dstPath = parent.getDstPath() + getParentPathSep() + dst;
-			else
-				dstPath = parent.getSrcPath() + getParentPathSep() + dst;
-		} else {
-			dstPath = this.dst;
-		}
 	}
 
-	private String validate(String path) {
-		if (path != null) {
-			path = path.replace('.', '/');
-			for (int i = 0; i < path.length(); i++) {
-				Character c = path.charAt(i);
-				if (!Character.isLetterOrDigit(c) && c != '_' && c != '/' && c != '<' && c != '>' &&
-						c != '$') {
-					String msg = String.format("invalid character at position %d in %s", i, path);
-					throw new InvalidCharacterMappingException(msg);
-				}
-			}
-		}
-		return path;
+	public ElementMapping getParent() {
+		return parent;
 	}
 
 	protected abstract String getParentPathSep();
 
-	public String getPath(boolean src) {
-		return src ? getSrcPath() : getDstPath();
-	}
-
-	public String getName(boolean src) {
-		return src ? getSrcName() : getDstName();
-	}
-
-	public String getSrcPath() {
-		return srcPath;
-	}
-
-	public String getSrcScope() {
-		if (parent != null)
-			return parent.getSrcPath();
-
-		if (src.lastIndexOf('/') == -1)
+	public String getPath(ObfLevel level) {
+		if (!names.containsKey(level))
 			return null;
-		return src.substring(0, src.lastIndexOf('/'));
+		if (parent != null) {
+			String parentPath = parent.getPath(level);
+			if (parentPath != null)
+				return parentPath + getParentPathSep() + getName(level);
+		}
+		return getName(level);
 	}
 
-	public String getSrcName() {
-		return src.substring(src.lastIndexOf('/') + 1);
-	}
-
-	public String getDstPath() {
-		return dstPath;
-	}
-
-	public String getDstScope() {
-		if (dst == null)
-			return null;
-
-		if (parent != null)
-			return parent.getDstPath();
-
-		if (src.lastIndexOf('/') == -1)
-			return null;
-		return dst.substring(0, dst.lastIndexOf('/'));
-	}
-
-	public String getDstName() {
-		if (dst == null)
-			return null;
-		return dst.substring(dst.lastIndexOf('/') + 1);
-	}
-
-	public Set<ElementMapping> getChildren() {
-		return children;
+	public String getName(ObfLevel level) {
+		return names.get(level);
 	}
 
 	@Override
@@ -114,18 +50,48 @@ public abstract class ElementMapping {
 			return false;
 
 		ElementMapping otherMapping = (ElementMapping) other;
+
+		if (!otherMapping.canEqual(this))
+			return false;
+
 		return ((parent == null && otherMapping.parent == null) ||
-				(parent != null && parent.equals(otherMapping.parent))) && src.equals(otherMapping.src) &&
-				((dst == null && otherMapping.dst == null) || (dst != null && dst.equals(otherMapping.dst)));
+				(parent != null && parent.equals(otherMapping.parent))) &&
+				names.keySet().equals(otherMapping.names.keySet()) &&
+				names.entrySet()
+						.stream()
+						.allMatch(entry -> entry.getValue().equals(otherMapping.getName(entry.getKey())));
 	}
 
 	@Override
 	public int hashCode() {
 		int hash = 27;
-		hash = hash * 31 + src.hashCode();
-		if (dst != null)
-			hash = hash * 31 + dst.hashCode();
-
+		for (Entry<ObfLevel, String> entry : names.entrySet()) {
+			hash = hash * 31 + entry.getKey().hashCode();
+			hash = hash * 31 + entry.getValue().hashCode();
+		}
+		if (parent != null)
+			hash = hash * 31 + parent.hashCode();
 		return hash;
+	}
+
+	public boolean canEqual(Object other) {
+		return false;
+	}
+
+	void updateNames(Map<ObfLevel, Path> names) {
+
+		for (ObfLevel level : names.keySet()) {
+			if (this.names.containsKey(level)) {
+				if (!this.names.get(level).equals(names.get(level).getName()))
+					throw new DuplicateMappingException("cannot overwrite a mapping");
+			} else {
+				this.names.put(level, names.get(level).getName());
+			}
+		}
+		if (parent != null)
+			parent.updateNames(names.entrySet()
+					.stream()
+					.filter(e -> e.getValue().getParent() != null)
+					.collect(Collectors.toMap(e -> e.getKey(), e -> e.getValue().getParent())));
 	}
 }

@@ -9,13 +9,8 @@ public class ArrayTypeDesc extends TypeDesc {
 	}
 
 	@Override
-	public String getSrc() {
-		return "[" + desc.getSrc();
-	}
-
-	@Override
-	public String getDst() {
-		return "[" + desc.getDst();
+	public String get(ObfLevel level) {
+		return "[" + desc.get(level);
 	}
 
 	public TypeDesc getDescType() {

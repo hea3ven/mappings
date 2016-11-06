@@ -93,16 +93,16 @@ public class EnigmaMappingsParser implements IMappingsParser {
 		m = fldPattern.matcher(line);
 		if (m.matches()) {
 			ClsMapping cls = this.scope.getScope(m.group(1));
-			mapping.addFld(cls.getSrcPath() + "/" + m.group(2), cls.getDstPath() + "/" + m.group(3),
-					m.group(4));
+			mapping.addFld(cls.getPath(ObfLevel.OBF) + "." + m.group(2),
+					cls.getPath(ObfLevel.DEOBF) + "." + m.group(3), ObfLevel.OBF, m.group(4));
 		}
 
 		m = mthdPattern.matcher(line);
 		if (m.matches()) {
 			ClsMapping cls = this.scope.getScope(m.group(1));
 //			currentMthd =
-			mapping.addMthd(cls.getSrcPath() + "/" + m.group(2), cls.getDstPath() + "/" + m.group(3),
-					m.group(4));
+			mapping.addMthd(cls.getPath(ObfLevel.OBF) + "." + m.group(2),
+					cls.getPath(ObfLevel.DEOBF) + "." + m.group(3), ObfLevel.OBF, m.group(4));
 		}
 
 //		m = argPattern.matcher(line);
@@ -113,7 +113,7 @@ public class EnigmaMappingsParser implements IMappingsParser {
 
 	private ClsMapping getCls(String name) {
 		name = name.replace("none/", "");
-		return mapping.getCls(name);
+		return mapping.getCls(name, ObfLevel.OBF);
 	}
 
 	public void write(OutputStream stream) throws IOException {
@@ -123,8 +123,9 @@ public class EnigmaMappingsParser implements IMappingsParser {
 	public void write(Writer writer) throws IOException {
 		List<ClsMapping> out = mapping.getAll()
 				.stream()
-				.filter(elem -> elem instanceof ClsMapping && ((ClsMapping) elem).getParent() == null)
-				.sorted((o1, o2) -> o1.getSrcPath().compareTo(o2.getSrcPath()))
+				.filter(elem -> elem instanceof ClsMapping &&
+						(elem.getParent() == null || elem.getParent() instanceof PkgMapping))
+				.sorted((o1, o2) -> o1.getPath(ObfLevel.OBF).compareTo(o2.getPath(ObfLevel.OBF)))
 				.map(elem -> (ClsMapping) elem)
 				.collect(Collectors.toList());
 
@@ -134,41 +135,41 @@ public class EnigmaMappingsParser implements IMappingsParser {
 	}
 
 	protected void writeCls(Writer writer, ClsMapping clsMap, String indent) throws IOException {
-		if (clsMap.getDstName() == null && clsMap.getChildren().size() == 0)
+		if (clsMap.getName(ObfLevel.DEOBF) == null && mapping.getChildren(clsMap).size() == 0)
 			return;
 
 		String srcPath;
 		if (!topParentHasPkg(clsMap)) {
 			if (indent.equals(""))
-				srcPath = "none/" + clsMap.getSrcName();
+				srcPath = "none/" + clsMap.getName(ObfLevel.OBF);
 			else
-				srcPath = "none/" + clsMap.getSrcPath();
+				srcPath = "none/" + clsMap.getPath(ObfLevel.OBF);
 		} else {
-			srcPath = clsMap.getSrcPath();
+			srcPath = clsMap.getPath(ObfLevel.OBF);
 		}
 		String dstPath;
-		if (!clsMap.getSrcPath().equals(clsMap.getDstPath())) {
+		if (!clsMap.getPath(ObfLevel.OBF).equals(clsMap.getPath(ObfLevel.DEOBF))) {
 			if (indent.equals(""))
-				dstPath = (clsMap.getDstPath() != null) ? clsMap.getDstPath() : "";
+				dstPath = (clsMap.getPath(ObfLevel.DEOBF) != null) ? clsMap.getPath(ObfLevel.DEOBF) : "";
 			else
-				dstPath = clsMap.getDstName();
+				dstPath = clsMap.getName(ObfLevel.DEOBF);
 		} else
 			dstPath = "";
 		writer.write(String.format("%sCLASS %s %s\n", indent, srcPath, dstPath));
 
-		for (ElementMapping elem : clsMap.getChildren()) {
+		for (ElementMapping elem : mapping.getChildren(clsMap)) {
 			if (elem instanceof MthdMapping) {
 				MthdMapping mthdMap = (MthdMapping) elem;
-				writer.write(String.format("%s\tMETHOD %s %s %s\n", indent, mthdMap.getSrcName(),
-						mthdMap.getDstName(), descToString(mthdMap.getDesc())));
+				writer.write(String.format("%s\tMETHOD %s %s %s\n", indent, mthdMap.getName(ObfLevel.OBF),
+						mthdMap.getName(ObfLevel.DEOBF), descToString(mthdMap.getDesc())));
 			} else if (elem instanceof FldMapping) {
 				FldMapping fldMap = (FldMapping) elem;
 				if (fldMap.getDesc() != null)
-					writer.write(String.format("%s\tFIELD %s %s %s\n", indent, fldMap.getSrcName(),
-							fldMap.getDstName(), descToString(fldMap.getDesc())));
+					writer.write(String.format("%s\tFIELD %s %s %s\n", indent, fldMap.getName(ObfLevel.OBF),
+							fldMap.getName(ObfLevel.DEOBF), typeDescToString(fldMap.getDesc())));
 				else
-					writer.write(String.format("%s\tFIELD %s %s\n", indent, fldMap.getSrcName(),
-							fldMap.getDstName()));
+					writer.write(String.format("%s\tFIELD %s %s\n", indent, fldMap.getName(ObfLevel.OBF),
+							fldMap.getName(ObfLevel.DEOBF)));
 			} else if (elem instanceof ClsMapping) {
 				ClsMapping innerClsMap = (ClsMapping) elem;
 				writeCls(writer, innerClsMap, indent + "\t");
@@ -194,21 +195,25 @@ public class EnigmaMappingsParser implements IMappingsParser {
 			ClsTypeDesc clsTypDesc = (ClsTypeDesc) param;
 			if (!topParentHasPkg(clsTypDesc.getCls())) {
 				if (clsTypDesc.getCls().getParent() == null)
-					return "Lnone/" + clsTypDesc.getCls().getSrcName() + ";";
+					return "Lnone/" + clsTypDesc.getCls().getName(ObfLevel.OBF) + ";";
 				else
-					return "Lnone/" + clsTypDesc.getCls().getSrcPath() + ";";
+					return "Lnone/" + clsTypDesc.getCls().getPath(ObfLevel.OBF) + ";";
 			}
 		} else if (param instanceof ArrayTypeDesc) {
 			return "[" + typeDescToString(((ArrayTypeDesc) param).getDescType());
 		}
 
-		return param.getSrc();
+		return param.get(ObfLevel.OBF);
 	}
 
 	private boolean topParentHasPkg(ClsMapping clsMap) {
-		if (clsMap.getParent() != null)
-			return topParentHasPkg(clsMap.getParent());
-		return clsMap.getSrcScope() != null;
+		if (clsMap.getParent() != null) {
+			if (clsMap.getParent() instanceof PkgMapping)
+				return clsMap.getParent().getName(ObfLevel.OBF) != null;
+			else
+				return topParentHasPkg((ClsMapping) clsMap.getParent());
+		}
+		return false;
 	}
 
 	/**

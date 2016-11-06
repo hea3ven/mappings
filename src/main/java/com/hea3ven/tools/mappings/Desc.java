@@ -18,33 +18,16 @@ public class Desc {
 		this.params = params;
 	}
 
-	public String get(boolean src) {
-		return src ? getSrc() : getDst();
-	}
-
-	public String getSrc() {
+	public String get(ObfLevel level) {
 		StringBuilder sb = new StringBuilder();
 		if (params != null) {
 			sb.append('(');
 			for (TypeDesc typDesc : params) {
-				sb.append(typDesc.getSrc());
+				sb.append(typDesc.get(level));
 			}
 			sb.append(')');
 		}
-		sb.append(ret.getSrc());
-		return sb.toString();
-	}
-
-	public String getDst() {
-		StringBuilder sb = new StringBuilder();
-		if (params != null) {
-			sb.append('(');
-			for (TypeDesc typDesc : params) {
-				sb.append(typDesc.getDst());
-			}
-			sb.append(')');
-		}
-		sb.append(ret.getDst());
+		sb.append(ret.get(level));
 		return sb.toString();
 	}
 
@@ -97,7 +80,7 @@ public class Desc {
 				typ = new ArrayTypeDesc(parseType(mappings, typeData.substring(1)));
 			} else {
 				String cls = typeData.substring(1, typeData.indexOf(';'));
-				ClsMapping clsMap = mappings.getCls(cls);
+				ClsMapping clsMap = mappings.getCls(cls, ObfLevel.OBF);
 				if (clsMap == null)
 					clsMap = mappings.addCls(cls, null);
 				typ = new ClsTypeDesc(clsMap);

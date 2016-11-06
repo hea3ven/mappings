@@ -9,13 +9,8 @@ public class ClsTypeDesc extends TypeDesc {
 	}
 
 	@Override
-	public String getSrc() {
-		return "L" + cls.getSrcPath() + ";";
-	}
-
-	@Override
-	public String getDst() {
-		return "L" + (cls.getDstPath() != null ? cls.getDstPath() : cls.getSrcPath()) + ";";
+	public String get(ObfLevel level) {
+		return "L" + cls.getPath(level) + ";";
 	}
 
 	public ClsMapping getCls() {
